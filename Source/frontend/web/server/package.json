@@ -1,0 +1,16 @@
+{
+  "name": "airfinch",
+  "version": "1.0.0",
+  "description": "this is the addon package",
+  "main": "nodeClient.js",
+  "dependencies": {
+    "request": "^2.88.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node nodeServer.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
