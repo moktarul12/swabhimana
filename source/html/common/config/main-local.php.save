@@ -1,0 +1,33 @@
+<?php
+return [
+    'components' => [
+        'db' => [
+            'class' => 'yii\db\Connection',
+            'dsn' => 'mysql:host=localhost;dbname=airfinch',    
+            'username' => 'root',
+            'password' => 'Ram@1210',    
+            'tablePrefix' => 'hts_',
+            'charset' => 'utf8',
+        ],
+        'user' => [
+        'identityClass' => 'frontend\models\User',//or Users2
+        'enableAutoLogin' => true,
+        ],
+        'mailer' => [
+            'class' => 'yii\swiftmailer\Mailer',
+            'viewPath' => '@common/mail',
+            // send all mails to a file by default. You have to set
+            // 'useFileTransport' to false and configure a transport
+            // for the mailer to send real emails.
+            'transport' => [
+               
+                'class' => 'Swift_SmtpTransport',
+                'host' => 'smtp.gmail.com',
+                'username' => 'airhostit@gmail.com',
+                'password' => 'AIzaSyCOM--0wImNEG7_W1KdQSHJ2firxoCTmfQ',
+                'port' => '587',
+                'encryption' => 'tls',
+                ],//'useFileTransport' => true,
+        ],
+    ],
+];
