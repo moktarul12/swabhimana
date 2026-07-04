@@ -28,9 +28,21 @@ import MyAddressesScreen from '../screens/MyAddressesScreen';
 import NotificationSettingsScreen from '../screens/NotificationSettingsScreen';
 import HelpSupportScreen from '../screens/HelpSupportScreen';
 import InfoContentScreen from '../screens/InfoContentScreen';
+import AdminLoginScreen from '../screens/AdminLoginScreen';
+import AdminDashboardScreen from '../screens/AdminDashboardScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+
+const linking = {
+  prefixes: ['manavsathi://', 'http://localhost:8081', 'https://manavsathis.com'],
+  config: {
+    screens: {
+      AdminLogin: 'admin',
+      AdminDashboard: 'admin/dashboard',
+    },
+  },
+};
 
 function MainTabs() {
   return (
@@ -68,7 +80,7 @@ export default function AppNavigator() {
 
   return (
     <DonateProvider>
-      <NavigationContainer>
+      <NavigationContainer linking={linking}>
         <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName={initialRoute}>
           <Stack.Screen name="Splash" component={SplashScreen} />
           <Stack.Screen name="Welcome" component={WelcomeScreen} />
@@ -87,6 +99,8 @@ export default function AppNavigator() {
           <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
           <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
           <Stack.Screen name="InfoContent" component={InfoContentScreen} />
+          <Stack.Screen name="AdminLogin" component={AdminLoginScreen} />
+          <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </DonateProvider>

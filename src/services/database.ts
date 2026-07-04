@@ -46,7 +46,23 @@ export interface UserAddress {
   user_id: string;
   label: string;
   address: string;
+  contact_number: string | null;
+  latitude: number | null;
+  longitude: number | null;
   is_default: number;
+}
+
+export interface Volunteer {
+  id: string;
+  name: string;
+  phone: string;
+  is_active: number;
+}
+
+export interface AdminDonation extends ItemDonation {
+  donor_name: string;
+  donor_email: string;
+  donor_phone: string | null;
 }
 
 export type DonationStatus = 'pending' | 'collected' | 'distributed' | 'completed';
@@ -102,7 +118,7 @@ export interface Story {
 }
 
 export interface ImpactStats {
-  total_donations: string;
+  total_volunteers: string;
   families_helped: string;
   items_donated: string;
   lives_impacted: string;
@@ -127,14 +143,19 @@ export interface NotificationSettings {
   promotional: number;
 }
 
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 6;
 
 const SCHEMA_DDL = `
 CREATE TABLE IF NOT EXISTS app_meta (key TEXT PRIMARY KEY, value TEXT);
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL, avatar TEXT, bio TEXT, phone TEXT,
+  is_admin INTEGER DEFAULT 0,
   created_at TEXT DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS volunteers (
+  id TEXT PRIMARY KEY, name TEXT NOT NULL, phone TEXT NOT NULL,
+  is_active INTEGER DEFAULT 1
 );
 CREATE TABLE IF NOT EXISTS item_categories (
   id TEXT PRIMARY KEY, name TEXT NOT NULL, icon TEXT NOT NULL,
@@ -142,7 +163,8 @@ CREATE TABLE IF NOT EXISTS item_categories (
 );
 CREATE TABLE IF NOT EXISTS user_addresses (
   id TEXT PRIMARY KEY, user_id TEXT NOT NULL, label TEXT NOT NULL,
-  address TEXT NOT NULL, is_default INTEGER DEFAULT 0
+  address TEXT NOT NULL, contact_number TEXT,
+  latitude REAL, longitude REAL, is_default INTEGER DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS item_donations (
   id TEXT PRIMARY KEY, user_id TEXT NOT NULL, category_id TEXT NOT NULL,
@@ -167,7 +189,7 @@ CREATE TABLE IF NOT EXISTS stories (
   created_at TEXT DEFAULT (datetime('now'))
 );
 CREATE TABLE IF NOT EXISTS impact_stats (
-  id TEXT PRIMARY KEY, total_donations TEXT NOT NULL, families_helped TEXT NOT NULL,
+  id TEXT PRIMARY KEY, total_volunteers TEXT NOT NULL, families_helped TEXT NOT NULL,
   items_donated TEXT NOT NULL, lives_impacted TEXT NOT NULL,
   communities_reached TEXT NOT NULL
 );
@@ -190,7 +212,7 @@ const DROP_ORDER = [
   'donations', 'campaigns',
   'notification_settings', 'notifications', 'stories', 'impact_stats',
   'donation_tracking', 'donation_photos', 'item_donations', 'user_addresses',
-  'item_categories', 'categories', 'users',
+  'volunteers', 'item_categories', 'categories', 'users',
   'app_meta',
 ];
 
@@ -203,9 +225,29 @@ function buildSeedStatements(): Stmt[] {
   const stmts: Stmt[] = [];
 
   stmts.push({
-    sql: `INSERT INTO users (id, name, email, password, avatar, phone) VALUES (?, ?, ?, ?, ?, ?)`,
-    args: ['user-ankit', 'Ankit Mehta', 'ankit.mehta@email.com', 'password123', 'avatar-ankit', '+91 98765 43210'],
+    sql: `INSERT INTO users (id, name, email, password, avatar, phone, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    args: ['user-sulaiman', 'Sulaiman Shariff', 'sulaiman@manavsathis.com', 'password123', 'avatar-sulaiman', '+91 8197479540', 0],
   });
+
+  stmts.push({
+    sql: `INSERT INTO users (id, name, email, password, avatar, phone, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    args: ['user-admin', 'ManavSaathi Admin', 'admin@manavsathis.com', 'admin123', 'avatar-sulaiman', '+91 8197479540', 1],
+  });
+
+  const volunteerData: [string, string, string][] = [
+    ['vol-1', 'Rohit Sharma', '9876543210'],
+    ['vol-2', 'Priya Nair', '9876500011'],
+    ['vol-3', 'Amit Verma', '9876500022'],
+    ['vol-4', 'Sneha Reddy', '9876500033'],
+    ['vol-5', 'Karan Patel', '9876500044'],
+    ['vol-6', 'Meera Joshi', '9876500055'],
+  ];
+  for (const [id, name, phone] of volunteerData) {
+    stmts.push({
+      sql: `INSERT INTO volunteers (id, name, phone, is_active) VALUES (?, ?, ?, 1)`,
+      args: [id, name, phone],
+    });
+  }
 
   const categories: [string, string, string, string, number][] = [
     ['cat-clothes', 'Clothes', 'shirt-outline', '#1B5E20', 1],
@@ -225,20 +267,20 @@ function buildSeedStatements(): Stmt[] {
   }
 
   stmts.push({
-    sql: `INSERT INTO impact_stats (id, total_donations, families_helped, items_donated, lives_impacted, communities_reached)
-          VALUES ('global', '12,450+', '8,320+', '18,750+', '6,980+', '120+')`,
+    sql: `INSERT INTO impact_stats (id, total_volunteers, families_helped, items_donated, lives_impacted, communities_reached)
+          VALUES ('global', '850+', '8,320+', '18,750+', '6,980+', '120+')`,
     args: [],
   });
 
-  const HOME_ADDRESS = '123, Green Park, Andheri East, Mumbai, Maharashtra - 400069';
+  const HOME_ADDRESS = 'Koramangala 8th Block, Rajendra Nagar, Bengaluru - 560096';
 
   stmts.push({
-    sql: `INSERT INTO user_addresses (id, user_id, label, address, is_default) VALUES (?, ?, ?, ?, 1)`,
-    args: ['addr-1', 'user-ankit', 'Home', HOME_ADDRESS],
+    sql: `INSERT INTO user_addresses (id, user_id, label, address, contact_number, latitude, longitude, is_default) VALUES (?, ?, ?, ?, ?, ?, ?, 1)`,
+    args: ['addr-1', 'user-sulaiman', 'Home', HOME_ADDRESS, '+91 8197479540', 12.9352, 77.6245],
   });
   stmts.push({
-    sql: `INSERT INTO user_addresses (id, user_id, label, address, is_default) VALUES (?, ?, ?, ?, 0)`,
-    args: ['addr-2', 'user-ankit', 'Office', '5th Floor, Nirlon Knowledge Park, Goregaon East, Mumbai - 400063'],
+    sql: `INSERT INTO user_addresses (id, user_id, label, address, contact_number, latitude, longitude, is_default) VALUES (?, ?, ?, ?, ?, ?, ?, 0)`,
+    args: ['addr-2', 'user-sulaiman', 'Office', 'Koramangala 8th Block, Rajendra Nagar, Bengaluru - 560096', '+91 8197479540', 12.9352, 77.6245],
   });
 
   // [id, categoryId, qty, condition, description, status, imageKey, pickupDate, pickupTime, volunteerName, volunteerPhone, deliveryDate, createdAt]
@@ -252,36 +294,36 @@ function buildSeedStatements(): Stmt[] {
     const [id, catId, qty, cond, desc, status, img, pDate, pTime, volName, volPhone, delDate, createdAt] = d;
     stmts.push({
       sql: `INSERT INTO item_donations (id, user_id, category_id, quantity, condition, description, status, image_key, pickup_address, pickup_date, pickup_time, contact_number, volunteer_name, volunteer_phone, delivery_date, created_at)
-            VALUES (?, 'user-ankit', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      args: [id, catId, qty, cond, desc, status, img, HOME_ADDRESS, pDate, pTime, '+91 98765 43210', volName, volPhone, delDate, createdAt],
+            VALUES (?, 'user-sulaiman', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [id, catId, qty, cond, desc, status, img, HOME_ADDRESS, pDate, pTime, '+91 8197479540', volName, volPhone, delDate, createdAt],
     });
   }
 
   const trackingSteps: [string, string, string, string | null, string | null, number, number][] = [
     // DON-2026-000123 — Completed (full journey, matches Track Your Donation screen)
     ['DON-2026-000123', 'Submitted', 'Your donation request has been submitted.', '03 Jul 2026', '10:30 AM', 1, 0],
-    ['DON-2026-000123', 'Accepted by Swabhiman', 'Swabhiman team has accepted your donation.', '03 Jul 2026', '02:15 PM', 1, 1],
+    ['DON-2026-000123', 'Accepted by ManavSaathi', 'ManavSaathi team has accepted your donation.', '03 Jul 2026', '02:15 PM', 1, 1],
     ['DON-2026-000123', 'Pickup Scheduled', 'A volunteer has been assigned for pickup.', '03 Jul 2026', '04:30 PM', 1, 2],
     ['DON-2026-000123', 'Collected', 'Your donation has been collected.', '04 Jul 2026', '11:30 AM', 1, 3],
     ['DON-2026-000123', 'Distributed', 'Your donation has been distributed to a family in need.', '05 Jul 2026', '04:00 PM', 1, 4],
     ['DON-2026-000123', 'Completed', 'Thank you for your generosity!', '05 Jul 2026', '04:30 PM', 1, 5],
     // DON-2026-000122 — Collected (in progress)
     ['DON-2026-000122', 'Submitted', 'Your donation request has been submitted.', '28 Jun 2026', '09:00 AM', 1, 0],
-    ['DON-2026-000122', 'Accepted by Swabhiman', 'Swabhiman team has accepted your donation.', '28 Jun 2026', '11:00 AM', 1, 1],
+    ['DON-2026-000122', 'Accepted by ManavSaathi', 'ManavSaathi team has accepted your donation.', '28 Jun 2026', '11:00 AM', 1, 1],
     ['DON-2026-000122', 'Pickup Scheduled', 'A volunteer has been assigned for pickup.', '28 Jun 2026', '01:00 PM', 1, 2],
     ['DON-2026-000122', 'Collected', 'Your donation has been collected.', '28 Jun 2026', '03:00 PM', 1, 3],
     ['DON-2026-000122', 'Distributed', 'Awaiting distribution to beneficiaries.', null, null, 0, 4],
     ['DON-2026-000122', 'Completed', 'Donation journey will be completed soon.', null, null, 0, 5],
     // DON-2026-000121 — Distributed
     ['DON-2026-000121', 'Submitted', 'Your donation request has been submitted.', '20 Jun 2026', '10:00 AM', 1, 0],
-    ['DON-2026-000121', 'Accepted by Swabhiman', 'Swabhiman team has accepted your donation.', '20 Jun 2026', '12:30 PM', 1, 1],
+    ['DON-2026-000121', 'Accepted by ManavSaathi', 'ManavSaathi team has accepted your donation.', '20 Jun 2026', '12:30 PM', 1, 1],
     ['DON-2026-000121', 'Pickup Scheduled', 'A volunteer has been assigned for pickup.', '20 Jun 2026', '03:00 PM', 1, 2],
     ['DON-2026-000121', 'Collected', 'Your donation has been collected.', '21 Jun 2026', '10:30 AM', 1, 3],
     ['DON-2026-000121', 'Distributed', 'Your donation has been distributed to a family in need.', '22 Jun 2026', '02:00 PM', 1, 4],
     ['DON-2026-000121', 'Completed', 'Donation journey will be completed soon.', null, null, 0, 5],
     // DON-2026-000120 — Completed
     ['DON-2026-000120', 'Submitted', 'Your donation request has been submitted.', '12 Jun 2026', '10:00 AM', 1, 0],
-    ['DON-2026-000120', 'Accepted by Swabhiman', 'Swabhiman team has accepted your donation.', '12 Jun 2026', '01:00 PM', 1, 1],
+    ['DON-2026-000120', 'Accepted by ManavSaathi', 'ManavSaathi team has accepted your donation.', '12 Jun 2026', '01:00 PM', 1, 1],
     ['DON-2026-000120', 'Pickup Scheduled', 'A volunteer has been assigned for pickup.', '12 Jun 2026', '03:30 PM', 1, 2],
     ['DON-2026-000120', 'Collected', 'Your donation has been collected.', '13 Jun 2026', '11:00 AM', 1, 3],
     ['DON-2026-000120', 'Distributed', 'Your donation has been distributed to a family in need.', '14 Jun 2026', '03:00 PM', 1, 4],
@@ -311,7 +353,7 @@ function buildSeedStatements(): Stmt[] {
   }
 
   const storyData: [string, string, string, string, string, string][] = [
-    ['story-1', 'Clothes', 'A warm smile and a new beginning', 'When we delivered warm clothes to the Sharma family, little Priya\'s smile reminded us why we do what we do.', 'Together with Swabhiman, donors like you are making a lasting difference in communities across India.', 'story-clothes'],
+    ['story-1', 'Clothes', 'A warm smile and a new beginning', 'When we delivered warm clothes to the Sharma family, little Priya\'s smile reminded us why we do what we do.', 'Together with ManavSaathi, donors like you are making a lasting difference in communities across India.', 'story-clothes'],
     ['story-2', 'Food', 'Nourishing hope in rural villages', 'Our food donation drive reached 200 families in remote villages, providing essential nutrition.', 'Every meal shared brings hope to a family in need.', 'story-food'],
     ['story-3', 'Books', 'Opening doors through education', 'Donated books helped set up a small library in a village school, inspiring young minds.', 'Education is the greatest gift we can give.', 'story-books'],
   ];
@@ -325,18 +367,18 @@ function buildSeedStatements(): Stmt[] {
   const notifs: [string, string, string, string, number, string][] = [
     ['notif-1', 'completed', 'Donation Completed', 'Your donation DON-2026-000123 has been completed successfully.', 0, '-2 hours'],
     ['notif-2', 'pickup', 'Pickup Scheduled', 'Volunteer Rohit will collect your items on 04 Jul between 10 AM - 12 PM.', 0, '-1 day'],
-    ['notif-3', 'accepted', 'Donation Accepted', 'Swabhiman has accepted your clothes donation request.', 1, '-2 days'],
+    ['notif-3', 'accepted', 'Donation Accepted', 'ManavSaathi has accepted your clothes donation request.', 1, '-2 days'],
     ['notif-4', 'submitted', 'Donation Submitted', 'Your donation request DON-2026-000122 has been submitted.', 1, '-3 days'],
   ];
   for (const [id, type, title, body, read, offset] of notifs) {
     stmts.push({
-      sql: `INSERT INTO notifications (id, user_id, type, title, body, read, created_at) VALUES (?, 'user-ankit', ?, ?, ?, ?, datetime('now', ?))`,
+      sql: `INSERT INTO notifications (id, user_id, type, title, body, read, created_at) VALUES (?, 'user-sulaiman', ?, ?, ?, ?, datetime('now', ?))`,
       args: [id, type, title, body, read, offset],
     });
   }
 
   stmts.push({
-    sql: `INSERT INTO notification_settings (user_id) VALUES ('user-ankit')`,
+    sql: `INSERT INTO notification_settings (user_id) VALUES ('user-sulaiman')`,
     args: [],
   });
 
@@ -422,10 +464,10 @@ export const db = {
     const id = generateId();
     await c.execute({
       sql: 'INSERT INTO users (id, name, email, password, avatar) VALUES (?, ?, ?, ?, ?)',
-      args: [id, name, email.toLowerCase(), password, 'avatar-ankit'],
+      args: [id, name, email.toLowerCase(), password, 'avatar-sulaiman'],
     });
     await c.execute({ sql: 'INSERT INTO notification_settings (user_id) VALUES (?)', args: [id] });
-    return { id, name, email: email.toLowerCase(), avatar: 'avatar-ankit', bio: null, phone: null, created_at: new Date().toISOString() };
+    return { id, name, email: email.toLowerCase(), avatar: 'avatar-sulaiman', bio: null, phone: null, created_at: new Date().toISOString() };
   },
 
   async login(email: string, password: string): Promise<User> {
@@ -469,7 +511,7 @@ export const db = {
 
   async getImpactStats(): Promise<ImpactStats> {
     const fallback: ImpactStats = {
-      total_donations: '12,450+', families_helped: '8,320+', items_donated: '18,750+',
+      total_volunteers: '850+', families_helped: '8,320+', items_donated: '18,750+',
       lives_impacted: '6,980+', communities_reached: '120+',
     };
     try {
@@ -478,7 +520,7 @@ export const db = {
       const row = result.rows[0];
       if (!row) return fallback;
       return {
-        total_donations: row.total_donations as string,
+        total_volunteers: row.total_volunteers as string,
         families_helped: row.families_helped as string,
         items_donated: row.items_donated as string,
         lives_impacted: row.lives_impacted as string,
@@ -497,7 +539,11 @@ export const db = {
     });
     return result.rows.map(r => ({
       id: r.id as string, user_id: r.user_id as string,
-      label: r.label as string, address: r.address as string, is_default: r.is_default as number,
+      label: r.label as string, address: r.address as string,
+      contact_number: r.contact_number as string | null,
+      latitude: r.latitude as number | null,
+      longitude: r.longitude as number | null,
+      is_default: r.is_default as number,
     }));
   },
 
@@ -506,15 +552,23 @@ export const db = {
     return addresses.find(a => a.is_default) || addresses[0] || null;
   },
 
-  async addAddress(userId: string, label: string, address: string, isDefault = false): Promise<string> {
+  async addAddress(
+    userId: string,
+    label: string,
+    address: string,
+    isDefault = false,
+    contactNumber?: string,
+    latitude?: number | null,
+    longitude?: number | null,
+  ): Promise<string> {
     const c = getClient();
     const id = generateId();
     if (isDefault) {
       await c.execute({ sql: 'UPDATE user_addresses SET is_default = 0 WHERE user_id = ?', args: [userId] });
     }
     await c.execute({
-      sql: 'INSERT INTO user_addresses (id, user_id, label, address, is_default) VALUES (?, ?, ?, ?, ?)',
-      args: [id, userId, label, address, isDefault ? 1 : 0],
+      sql: 'INSERT INTO user_addresses (id, user_id, label, address, contact_number, latitude, longitude, is_default) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      args: [id, userId, label, address, contactNumber || null, latitude ?? null, longitude ?? null, isDefault ? 1 : 0],
     });
     return id;
   },
@@ -598,7 +652,7 @@ export const db = {
 
     const steps = [
       ['Submitted', 'Your donation request has been submitted.', 1],
-      ['Accepted by Swabhiman', 'Awaiting verification.', 0],
+      ['Accepted by ManavSaathi', 'Awaiting verification.', 0],
     ];
     for (let i = 0; i < steps.length; i++) {
       const [title, desc, done] = steps[i];
@@ -708,9 +762,149 @@ export const db = {
     args.push(userId);
     await c.execute({ sql: `UPDATE notification_settings SET ${sets.join(', ')} WHERE user_id = ?`, args });
   },
+
+  async adminLogin(email: string, password: string): Promise<User> {
+    const c = getClient();
+    const result = await c.execute({
+      sql: 'SELECT * FROM users WHERE email = ? AND password = ? AND is_admin = 1',
+      args: [email.toLowerCase(), password],
+    });
+    if (result.rows.length === 0) throw new Error('Invalid admin credentials');
+    return mapUser(result.rows[0] as Record<string, unknown>);
+  },
+
+  async getVolunteers(): Promise<Volunteer[]> {
+    const c = getClient();
+    const result = await c.execute('SELECT * FROM volunteers WHERE is_active = 1 ORDER BY name');
+    return result.rows.map(r => ({
+      id: r.id as string,
+      name: r.name as string,
+      phone: r.phone as string,
+      is_active: r.is_active as number,
+    }));
+  },
+
+  async getAllDonationsForAdmin(statusFilter?: DonationStatus | 'all'): Promise<AdminDonation[]> {
+    const c = getClient();
+    let sql = `SELECT d.*, c.name as category_name, c.icon as category_icon, c.color as category_color,
+               u.name as donor_name, u.email as donor_email, u.phone as donor_phone
+               FROM item_donations d
+               JOIN item_categories c ON d.category_id = c.id
+               JOIN users u ON d.user_id = u.id`;
+    const args: string[] = [];
+    if (statusFilter && statusFilter !== 'all') {
+      sql += ' WHERE d.status = ?';
+      args.push(statusFilter);
+    }
+    sql += ' ORDER BY d.created_at DESC';
+    const result = await c.execute({ sql, args });
+    return result.rows.map(r => ({
+      ...mapItemDonation(r as Record<string, unknown>),
+      donor_name: r.donor_name as string,
+      donor_email: r.donor_email as string,
+      donor_phone: r.donor_phone as string | null,
+    }));
+  },
+
+  async assignVolunteer(donationId: string, volunteerId: string): Promise<void> {
+    const c = getClient();
+    const vol = await c.execute({ sql: 'SELECT name, phone FROM volunteers WHERE id = ?', args: [volunteerId] });
+    if (vol.rows.length === 0) throw new Error('Volunteer not found');
+    const name = vol.rows[0].name as string;
+    const phone = vol.rows[0].phone as string;
+    await c.execute({
+      sql: 'UPDATE item_donations SET volunteer_name = ?, volunteer_phone = ? WHERE id = ?',
+      args: [name, phone, donationId],
+    });
+    const don = await this.getItemDonationById(donationId);
+    if (don) {
+      await c.execute({
+        sql: `UPDATE donation_tracking SET is_completed = 1, step_date = date('now'), step_time = time('now')
+              WHERE donation_id = ? AND step_title = 'Pickup Scheduled'`,
+        args: [donationId],
+      });
+      const existing = await c.execute({
+        sql: `SELECT id FROM donation_tracking WHERE donation_id = ? AND step_title = 'Pickup Scheduled'`,
+        args: [donationId],
+      });
+      if (existing.rows.length === 0) {
+        await c.execute({
+          sql: `INSERT INTO donation_tracking (id, donation_id, step_title, step_description, step_date, step_time, is_completed, sort_order)
+                VALUES (?, ?, 'Pickup Scheduled', ?, date('now'), time('now'), 1, 2)`,
+          args: [generateId(), donationId, `Volunteer ${name} assigned for pickup.`],
+        });
+      }
+      await c.execute({
+        sql: 'INSERT INTO notifications (id, user_id, type, title, body) VALUES (?, ?, ?, ?, ?)',
+        args: [generateId(), don.user_id, 'pickup', 'Volunteer Assigned', `${name} will collect your items. Contact: ${phone}`],
+      });
+    }
+  },
+
+  async updateDonationStatus(donationId: string, status: DonationStatus): Promise<void> {
+    const c = getClient();
+    const updates: Record<DonationStatus, string | null> = {
+      pending: null,
+      collected: 'Collected',
+      distributed: 'Distributed',
+      completed: 'Completed',
+    };
+    const stepTitle = updates[status];
+    await c.execute({ sql: 'UPDATE item_donations SET status = ? WHERE id = ?', args: [status, donationId] });
+    if (status === 'completed') {
+      await c.execute({ sql: `UPDATE item_donations SET delivery_date = date('now') WHERE id = ?`, args: [donationId] });
+    }
+    if (stepTitle) {
+      await c.execute({
+        sql: `UPDATE donation_tracking SET is_completed = 1, step_date = date('now'), step_time = time('now')
+              WHERE donation_id = ? AND step_title = ?`,
+        args: [donationId, stepTitle],
+      });
+    }
+    const don = await this.getItemDonationById(donationId);
+    if (don) {
+      const titles: Record<DonationStatus, string> = {
+        pending: 'Donation Pending',
+        collected: 'Items Collected',
+        distributed: 'Items Distributed',
+        completed: 'Donation Completed',
+      };
+      await c.execute({
+        sql: 'INSERT INTO notifications (id, user_id, type, title, body) VALUES (?, ?, ?, ?, ?)',
+        args: [generateId(), don.user_id, status, titles[status], `Your donation ${donationId} is now ${status}.`],
+      });
+    }
+  },
+
+  async acceptDonation(donationId: string): Promise<void> {
+    const c = getClient();
+    await c.execute({
+      sql: `UPDATE donation_tracking SET is_completed = 1, step_date = date('now'), step_time = time('now')
+            WHERE donation_id = ? AND step_title = 'Accepted by ManavSaathi'`,
+      args: [donationId],
+    });
+    const existing = await c.execute({
+      sql: `SELECT id FROM donation_tracking WHERE donation_id = ? AND step_title = 'Accepted by ManavSaathi'`,
+      args: [donationId],
+    });
+    if (existing.rows.length === 0) {
+      await c.execute({
+        sql: `INSERT INTO donation_tracking (id, donation_id, step_title, step_description, step_date, step_time, is_completed, sort_order)
+              VALUES (?, ?, 'Accepted by ManavSaathi', 'ManavSaathi team has accepted your donation.', date('now'), time('now'), 1, 1)`,
+        args: [generateId(), donationId],
+      });
+    }
+    const don = await this.getItemDonationById(donationId);
+    if (don) {
+      await c.execute({
+        sql: 'INSERT INTO notifications (id, user_id, type, title, body) VALUES (?, ?, ?, ?, ?)',
+        args: [generateId(), don.user_id, 'accepted', 'Donation Accepted', `ManavSaathi has accepted your ${don.category_name} donation.`],
+      });
+    }
+  },
 };
 
-const SESSION_KEY = 'sharehope_session';
+const SESSION_KEY = 'manavsathi_session';
 
 const webStorage = {
   getItemAsync: async (key: string): Promise<string | null> => {

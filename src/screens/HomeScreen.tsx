@@ -1,18 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ImageSourcePropType } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS, SHADOWS } from '../constants/theme';
 import { LOCAL_IMAGES } from '../constants/images';
 import { AppLogo } from '../components/AppLogo';
-import { db, ImpactStats, ItemCategory } from '../services/database';
+import { DonationCard } from '../components/DonationCard';
+import { db, ImpactStats, ItemCategory, ItemDonation } from '../services/database';
+import { APP_NAME } from '../constants/branding';
 import { useAuth } from '../context/AuthContext';
 import { useDonate } from '../context/DonateContext';
 
 const STAT_META = [
-  { key: 'total_donations' as const, icon: 'heart' as const, label: 'Total Donations', color: '#1B5E20' },
-  { key: 'families_helped' as const, icon: 'people' as const, label: 'Families Helped', color: '#E65100' },
+  { key: 'total_volunteers' as const, icon: 'people' as const, label: 'Total Volunteers', color: '#1B5E20' },
+  { key: 'families_helped' as const, icon: 'home' as const, label: 'Families Helped', color: '#E65100' },
   { key: 'items_donated' as const, icon: 'cube' as const, label: 'Items Donated', color: '#7B1FA2' },
   { key: 'lives_impacted' as const, icon: 'medkit' as const, label: 'Lives Impacted', color: '#00897B' },
 ];
@@ -27,7 +30,7 @@ type QuickAction = {
 const QUICK_ACTIONS: QuickAction[] = [
   { icon: 'add', label: 'Donate Now', screen: 'DonateTab', primary: true },
   { icon: 'time-outline', label: 'Track Donation', screen: 'TrackDonation' },
-  { icon: 'document-text-outline', label: 'Donation History', screen: 'HistoryTab' },
+  { icon: 'document-text-outline', label: 'My Donations', screen: 'HistoryTab' },
   { icon: 'shield-checkmark-outline', label: 'Impact Stories', screen: 'Stories' },
 ];
 
@@ -52,22 +55,27 @@ export default function HomeScreen({ navigation }: any) {
   const { updateForm } = useDonate();
   const [stats, setStats] = useState<ImpactStats | null>(null);
   const [categories, setCategories] = useState<ItemCategory[]>([]);
+  const [recentDonations, setRecentDonations] = useState<ItemDonation[]>([]);
   const [unread, setUnread] = useState(0);
-  const firstName = user?.name?.split(' ')[0] || 'Ankit';
+  const firstName = user?.name?.split(' ')[0] || 'Sulaiman';
 
-  useEffect(() => {
+  const loadData = useCallback(async () => {
     db.getImpactStats().then(setStats);
     db.getItemCategories().then(setCategories);
-    if (user) db.getUnreadCount(user.id).then(setUnread);
+    if (user) {
+      db.getUnreadCount(user.id).then(setUnread);
+      db.getItemDonations(user.id, 'all').then((d) => setRecentDonations(d.slice(0, 3)));
+    }
   }, [user]);
 
-  // HomeTab is a direct child of the tab navigator, so a single getParent()
-  // reaches the root stack that owns TrackDonation / Stories / Notifications.
+  useEffect(() => { loadData(); }, [loadData]);
+  useFocusEffect(useCallback(() => { loadData(); }, [loadData]));
+
   const rootNav = () => navigation.getParent();
 
   const navigate = (screen: string) => {
     if (screen === 'DonateTab' || screen === 'HistoryTab') navigation.navigate(screen);
-    else if (screen === 'TrackDonation') rootNav()?.navigate('TrackDonation', { id: 'DON-2026-000123' });
+    else if (screen === 'TrackDonation') rootNav()?.navigate('TrackDonation', { id: recentDonations[0]?.id || 'DON-2026-000123' });
     else rootNav()?.navigate(screen);
   };
 
@@ -79,32 +87,38 @@ export default function HomeScreen({ navigation }: any) {
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-        <View style={[styles.header, { paddingTop: insets.top + SPACING.md }]}>
-          <AppLogo size="sm" direction="row" />
-          <TouchableOpacity style={styles.bellBtn} onPress={() => rootNav()?.navigate('Notifications')}>
-            <Ionicons name="notifications-outline" size={24} color={COLORS.textDark} />
-            {unread > 0 && <View style={styles.badge} />}
-          </TouchableOpacity>
-        </View>
+        <LinearGradient colors={['#F1F8F1', COLORS.white]} style={[styles.headerGradient, { paddingTop: insets.top + SPACING.md }]}>
+          <View style={styles.header}>
+            <AppLogo size="sm" direction="row" />
+            <TouchableOpacity style={styles.bellBtn} onPress={() => rootNav()?.navigate('Notifications')}>
+              <Ionicons name="notifications-outline" size={24} color={COLORS.textDark} />
+              {unread > 0 && <View style={styles.badge} />}
+            </TouchableOpacity>
+          </View>
 
-        <View style={styles.greetingSection}>
-          <Text style={styles.greeting}>Hello, {firstName} 👋</Text>
-          <Text style={styles.greetingSub}>Good to see you back!</Text>
-        </View>
+          <View style={styles.greetingSection}>
+            <Text style={styles.greeting}>Hello, {firstName} 👋</Text>
+            <Text style={styles.greetingSub}>Every donation creates hope. Thank you for caring!</Text>
+          </View>
+        </LinearGradient>
 
         <View style={styles.bannerCard}>
-          <View style={styles.bannerTextWrap}>
-            <Text style={styles.bannerText}>
-              Together with <Text style={styles.bannerBold}>Swabhiman</Text> we create better tomorrows.
-            </Text>
-          </View>
-          <Image source={LOCAL_IMAGES.homeFamily} style={styles.bannerImage} />
+          <LinearGradient colors={['#1B5E20', '#2E7D32']} style={styles.bannerGradient}>
+            <View style={styles.bannerTextWrap}>
+              <Text style={styles.bannerText}>
+                Together with <Text style={styles.bannerBold}>{APP_NAME}</Text> we create better tomorrows.
+              </Text>
+            </View>
+            <Image source={LOCAL_IMAGES.homeFamily} style={styles.bannerImage} />
+          </LinearGradient>
         </View>
 
         <View style={styles.statsGrid}>
           {STAT_META.map((meta) => (
             <View key={meta.key} style={styles.statCard}>
-              <Ionicons name={meta.icon} size={22} color={meta.color} />
+              <View style={[styles.statIconWrap, { backgroundColor: meta.color + '15' }]}>
+                <Ionicons name={meta.icon} size={20} color={meta.color} />
+              </View>
               <Text style={[styles.statValue, { color: meta.color }]}>
                 {stats ? stats[meta.key] : '—'}
               </Text>
@@ -112,6 +126,30 @@ export default function HomeScreen({ navigation }: any) {
             </View>
           ))}
         </View>
+
+        {recentDonations.length > 0 && (
+          <>
+            <View style={styles.sectionHeader}>
+              <View>
+                <Text style={styles.sectionTitleTight}>My Donations</Text>
+                <Text style={styles.sectionSub}>Track your recent contributions</Text>
+              </View>
+              <TouchableOpacity onPress={() => navigate('HistoryTab')}>
+                <Text style={styles.seeAll}>See all</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.donationsSection}>
+              {recentDonations.map((d) => (
+                <DonationCard
+                  key={d.id}
+                  donation={d}
+                  compact
+                  onPress={() => rootNav()?.navigate('DonationDetail', { id: d.id })}
+                />
+              ))}
+            </View>
+          </>
+        )}
 
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.actionsRow}>
@@ -131,13 +169,7 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={styles.donateSub}>Your donations power these programs.</Text>
           </View>
         </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.programRow}
-          snapToInterval={252}
-          decelerationRate="fast"
-        >
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.programRow} snapToInterval={252} decelerationRate="fast">
           {PROGRAMS.map((p) => (
             <TouchableOpacity key={p.title} style={styles.programCard} onPress={() => navigate('DonateTab')} activeOpacity={0.9}>
               <View style={styles.programImageWrap}>
@@ -168,11 +200,7 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={styles.seeAll}>See all</Text>
           </TouchableOpacity>
         </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.catRow}
-        >
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catRow}>
           {categories.map((cat) => (
             <TouchableOpacity key={cat.id} style={styles.catCard} onPress={() => startDonation(cat)} activeOpacity={0.85}>
               <View style={[styles.catIcon, { backgroundColor: cat.color + '18' }]}>
@@ -184,14 +212,16 @@ export default function HomeScreen({ navigation }: any) {
         </ScrollView>
 
         <TouchableOpacity style={styles.ctaBanner} onPress={() => navigate('DonateTab')} activeOpacity={0.9}>
-          <View style={styles.ctaIconWrap}>
-            <Ionicons name="gift" size={24} color={COLORS.white} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.ctaTitle}>Ready to make a difference?</Text>
-            <Text style={styles.ctaSub}>Donate clothes, food, furniture & more in minutes.</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={22} color={COLORS.primary} />
+          <LinearGradient colors={[COLORS.primary, '#2E7D32']} style={styles.ctaGradient}>
+            <View style={styles.ctaIconWrap}>
+              <Ionicons name="gift" size={24} color={COLORS.white} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.ctaTitle}>Ready to make a difference?</Text>
+              <Text style={styles.ctaSub}>Donate clothes, food, furniture & more in minutes.</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={22} color={COLORS.white} />
+          </LinearGradient>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -200,21 +230,27 @@ export default function HomeScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.white },
+  headerGradient: { paddingBottom: SPACING.sm },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: SPACING.lg, paddingBottom: SPACING.sm },
   bellBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   badge: { position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.error },
   greetingSection: { paddingHorizontal: SPACING.lg, paddingBottom: SPACING.lg },
   greeting: { fontSize: FONT_SIZE.xxxl, fontWeight: '700', color: COLORS.textDark },
   greetingSub: { fontSize: FONT_SIZE.md, color: COLORS.textMedium, marginTop: 4 },
-  bannerCard: { flexDirection: 'row', alignItems: 'center', marginHorizontal: SPACING.lg, backgroundColor: COLORS.primary, borderRadius: BORDER_RADIUS.lg, padding: SPACING.lg, minHeight: 120, ...SHADOWS.medium },
+  bannerCard: { marginHorizontal: SPACING.lg, borderRadius: BORDER_RADIUS.lg, overflow: 'hidden', ...SHADOWS.medium },
+  bannerGradient: { flexDirection: 'row', alignItems: 'center', padding: SPACING.lg, minHeight: 120 },
   bannerTextWrap: { flex: 1, paddingRight: SPACING.md },
   bannerText: { fontSize: FONT_SIZE.lg, fontWeight: '500', color: COLORS.white, lineHeight: 26 },
   bannerBold: { fontWeight: '700' },
   bannerImage: { width: 88, height: 88, borderRadius: BORDER_RADIUS.md, resizeMode: 'cover' },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', paddingHorizontal: SPACING.lg, paddingTop: SPACING.lg },
   statCard: { width: '48%', backgroundColor: COLORS.white, borderRadius: BORDER_RADIUS.lg, padding: SPACING.lg, marginBottom: SPACING.sm, borderWidth: 1, borderColor: COLORS.borderLight, ...SHADOWS.small },
-  statValue: { fontSize: FONT_SIZE.xl, fontWeight: '700', marginTop: SPACING.sm },
+  statIconWrap: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginBottom: SPACING.sm },
+  statValue: { fontSize: FONT_SIZE.xl, fontWeight: '700' },
   statLabel: { fontSize: FONT_SIZE.sm, color: COLORS.textMedium, marginTop: 4 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: SPACING.lg, paddingTop: SPACING.xl, paddingBottom: SPACING.sm },
+  sectionSub: { fontSize: FONT_SIZE.sm, color: COLORS.textMedium, marginTop: 2 },
+  donationsSection: { paddingHorizontal: SPACING.lg },
   sectionTitle: { fontSize: FONT_SIZE.lg, fontWeight: '700', color: COLORS.textDark, paddingHorizontal: SPACING.lg, paddingTop: SPACING.lg, paddingBottom: SPACING.md },
   actionsRow: { flexDirection: 'row', paddingHorizontal: SPACING.lg, justifyContent: 'space-between' },
   actionItem: { alignItems: 'center', width: '23%' },
@@ -241,8 +277,9 @@ const styles = StyleSheet.create({
   catCard: { width: 84, alignItems: 'center', backgroundColor: COLORS.white, borderRadius: BORDER_RADIUS.lg, paddingVertical: SPACING.md, borderWidth: 1, borderColor: COLORS.borderLight, ...SHADOWS.small },
   catIcon: { width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center', marginBottom: SPACING.sm },
   catName: { fontSize: FONT_SIZE.sm, fontWeight: '500', color: COLORS.textDark },
-  ctaBanner: { flexDirection: 'row', alignItems: 'center', marginHorizontal: SPACING.lg, marginTop: SPACING.xl, backgroundColor: COLORS.primaryLighter, borderRadius: BORDER_RADIUS.lg, padding: SPACING.lg, gap: SPACING.md },
-  ctaIconWrap: { width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center' },
-  ctaTitle: { fontSize: FONT_SIZE.md, fontWeight: '700', color: COLORS.textDark },
-  ctaSub: { fontSize: FONT_SIZE.sm, color: COLORS.textMedium, marginTop: 2 },
+  ctaBanner: { marginHorizontal: SPACING.lg, marginTop: SPACING.xl, borderRadius: BORDER_RADIUS.lg, overflow: 'hidden', ...SHADOWS.medium },
+  ctaGradient: { flexDirection: 'row', alignItems: 'center', padding: SPACING.lg, gap: SPACING.md },
+  ctaIconWrap: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  ctaTitle: { fontSize: FONT_SIZE.md, fontWeight: '700', color: COLORS.white },
+  ctaSub: { fontSize: FONT_SIZE.sm, color: 'rgba(255,255,255,0.85)', marginTop: 2 },
 });

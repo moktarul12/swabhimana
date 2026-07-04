@@ -37,7 +37,7 @@ export default function DonateCategoryScreen({ navigation }: any) {
             </TouchableOpacity>
           ))}
         </View>
-        <Text style={styles.footerNote}>All items will be collected and donated by Swabhiman.</Text>
+        <Text style={styles.footerNote}>All items will be collected and distributed by ManavSaathi.</Text>
       </ScrollView>
     </View>
   );

@@ -1,18 +1,18 @@
 {
   "expo": {
-    "name": "ShareHope",
-    "slug": "sharehope",
+    "name": "ManavSaathi",
+    "slug": "manavsathi",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "scheme": "sharehope",
+    "scheme": "manavsathi",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.dromominds.sharehope"
+      "bundleIdentifier": "com.manavsathis.app"
     },
     "android": {
-      "package": "com.dromominds.sharehope",
+      "package": "com.manavsathis.app",
       "adaptiveIcon": {
         "backgroundColor": "#1B5E20",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -22,7 +22,8 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
     },
     "plugins": [
       "expo-secure-store",
@@ -30,7 +31,14 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "ShareHope needs access to your photos to upload campaign images."
+          "photosPermission": "ManavSaathi needs access to your photos to upload donation images."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "ManavSaathi needs your location to set pickup addresses.",
+          "locationWhenInUsePermission": "ManavSaathi needs your location to set pickup addresses."
         }
       ]
     ],

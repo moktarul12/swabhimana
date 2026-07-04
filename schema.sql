@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS stories (
 
 CREATE TABLE IF NOT EXISTS impact_stats (
   id TEXT PRIMARY KEY,
-  total_donations TEXT NOT NULL,
+  total_volunteers TEXT NOT NULL,
   families_helped TEXT NOT NULL,
   items_donated TEXT NOT NULL,
   lives_impacted TEXT NOT NULL,

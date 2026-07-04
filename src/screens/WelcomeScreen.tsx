@@ -31,8 +31,8 @@ export default function WelcomeScreen({ navigation }: any) {
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.title}>Small Acts Big Impact</Text>
-        <Text style={styles.subtitle}>Your kindness can bring smiles and hope.</Text>
+        <Text style={styles.title}>Together for Humanity</Text>
+        <Text style={styles.subtitle}>Connect compassion with action through ManavSaathi.</Text>
       </View>
 
       <View style={styles.footer}>

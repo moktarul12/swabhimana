@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppLogo } from '../components/AppLogo';
 import { COLORS, FONT_SIZE, SPACING } from '../constants/theme';
+import { APP_NAME, APP_TAGLINE } from '../constants/branding';
 import { LOCAL_IMAGES } from '../constants/images';
 
 export default function SplashScreen({ navigation }: any) {
@@ -18,11 +19,11 @@ export default function SplashScreen({ navigation }: any) {
       <View style={[styles.topSection, { paddingTop: insets.top + SPACING.xxxl }]}>
         <AppLogo size="lg" />
         <Text style={styles.tagline}>
-          Donate with Trust.{'\n'}Every Donation Reaches Someone in Need.
+          {APP_TAGLINE}.{'\n'}Every act of kindness changes a life.
         </Text>
         <View style={styles.poweredBy}>
           <Text style={styles.poweredText}>Powered by</Text>
-          <Text style={styles.swabhimanText}>Swabhiman</Text>
+          <Text style={styles.brandText}>{APP_NAME}</Text>
         </View>
       </View>
       <Image source={LOCAL_IMAGES.splashChildren} style={styles.bottomImage} />
@@ -36,6 +37,6 @@ const styles = StyleSheet.create({
   tagline: { fontSize: FONT_SIZE.md, color: COLORS.textMedium, textAlign: 'center', lineHeight: 22, marginTop: SPACING.xl },
   poweredBy: { alignItems: 'center', marginTop: SPACING.xxl },
   poweredText: { fontSize: FONT_SIZE.sm, color: COLORS.textLight },
-  swabhimanText: { fontSize: FONT_SIZE.lg, fontWeight: '700', color: COLORS.primary, marginTop: SPACING.xs },
+  brandText: { fontSize: FONT_SIZE.lg, fontWeight: '700', color: COLORS.primary, marginTop: SPACING.xs },
   bottomImage: { width: '100%', height: 220, resizeMode: 'cover' },
 });

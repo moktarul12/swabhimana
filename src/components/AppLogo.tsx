@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
+import { APP_NAME } from '../constants/branding';
 import { COLORS, FONT_SIZE, SPACING } from '../constants/theme';
 import { LOCAL_IMAGES } from '../constants/images';
 
@@ -19,7 +20,7 @@ export function AppLogo({ size = 'md', showText = true, color = COLORS.primary, 
     <View style={[styles.wrap, isRow && styles.wrapRow]}>
       <Image source={LOCAL_IMAGES.logoMark} style={{ width: markSize, height: markSize }} resizeMode="contain" />
       {showText && (
-        <Text style={[styles.text, { fontSize, color }, isRow ? styles.textRow : styles.textColumn]}>ShareHope</Text>
+        <Text style={[styles.text, { fontSize, color }, isRow ? styles.textRow : styles.textColumn]}>{APP_NAME}</Text>
       )}
     </View>
   );

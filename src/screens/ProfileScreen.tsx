@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS } from '../constants/theme';
 import { resolveImage } from '../constants/images';
+import { DEMO_USER } from '../constants/branding';
 import { useAuth } from '../context/AuthContext';
 
 const MENU_ITEMS = [
@@ -40,9 +41,9 @@ export default function ProfileScreen({ navigation }: any) {
           <Text style={styles.headerTitle}>My Profile</Text>
         </View>
         <View style={styles.userSection}>
-          <Image source={resolveImage(user?.avatar || 'avatar-ankit')} style={styles.avatar} />
-          <Text style={styles.userName}>{user?.name || 'Ankit Mehta'}</Text>
-          <Text style={styles.userEmail}>{user?.email || 'ankit.mehta@email.com'}</Text>
+          <Image source={resolveImage(user?.avatar || 'avatar-sulaiman')} style={styles.avatar} />
+          <Text style={styles.userName}>{user?.name || DEMO_USER.name}</Text>
+          <Text style={styles.userEmail}>{user?.email || DEMO_USER.email}</Text>
         </View>
         <View style={styles.menuList}>
           {MENU_ITEMS.map((item, index) => (

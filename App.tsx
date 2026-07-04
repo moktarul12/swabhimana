@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from './src/context/AuthContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import { initDatabase } from './src/services/database';
+import { WebShell } from './src/components/WebShell';
 import { COLORS } from './src/constants/theme';
 
 export default function App() {
@@ -31,7 +32,9 @@ export default function App() {
     <SafeAreaProvider>
       <AuthProvider>
         <StatusBar style="dark" />
-        <AppNavigator />
+        <WebShell>
+          <AppNavigator />
+        </WebShell>
       </AuthProvider>
     </SafeAreaProvider>
   );

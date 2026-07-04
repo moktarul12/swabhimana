@@ -6,7 +6,8 @@ import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS, SHADOWS } from '../constants
 import { db, ImpactStats } from '../services/database';
 
 const IMPACT_ITEMS = [
-  { key: 'families_helped' as const, icon: 'people-outline' as const, label: 'Families Helped', color: '#E65100' },
+  { key: 'total_volunteers' as const, icon: 'hand-left-outline' as const, label: 'Total Volunteers', color: '#1B5E20' },
+  { key: 'families_helped' as const, icon: 'home-outline' as const, label: 'Families Helped', color: '#E65100' },
   { key: 'items_donated' as const, icon: 'cube-outline' as const, label: 'Items Donated', color: '#7B1FA2' },
   { key: 'lives_impacted' as const, icon: 'heart-outline' as const, label: 'Lives Impacted', color: '#00897B' },
   { key: 'communities_reached' as const, icon: 'globe-outline' as const, label: 'Communities Reached', color: '#1B5E20' },

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, KeyboardAv
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONT_SIZE, SPACING } from '../constants/theme';
 import { Button, Input } from '../components/Button';
+import { DEMO_USER } from '../constants/branding';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginScreen({ navigation }: any) {
@@ -86,7 +87,7 @@ export default function LoginScreen({ navigation }: any) {
             Don't have an account?{' '}
             <Text style={styles.linkText} onPress={() => navigation.navigate('SignUp')}>Sign Up</Text>
           </Text>
-          <Text style={styles.demoHint}>Demo: ankit.mehta@email.com / password123</Text>
+          <Text style={styles.demoHint}>Demo: {DEMO_USER.email} / {DEMO_USER.password}</Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
