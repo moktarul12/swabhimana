@@ -28,6 +28,7 @@ import MyAddressesScreen from '../screens/MyAddressesScreen';
 import NotificationSettingsScreen from '../screens/NotificationSettingsScreen';
 import HelpSupportScreen from '../screens/HelpSupportScreen';
 import InfoContentScreen from '../screens/InfoContentScreen';
+import AboutUsScreen from '../screens/AboutUsScreen';
 import AdminLoginScreen from '../screens/AdminLoginScreen';
 import AdminDashboardScreen from '../screens/AdminDashboardScreen';
 
@@ -99,6 +100,7 @@ export default function AppNavigator() {
           <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
           <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
           <Stack.Screen name="InfoContent" component={InfoContentScreen} />
+          <Stack.Screen name="AboutUs" component={AboutUsScreen} />
           <Stack.Screen name="AdminLogin" component={AdminLoginScreen} />
           <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
         </Stack.Navigator>

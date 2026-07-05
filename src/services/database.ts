@@ -231,7 +231,7 @@ function buildSeedStatements(): Stmt[] {
 
   stmts.push({
     sql: `INSERT INTO users (id, name, email, password, avatar, phone, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    args: ['user-admin', 'ManavSaathi Admin', 'admin@manavsathis.com', 'admin123', 'avatar-sulaiman', '+91 8197479540', 1],
+    args: ['user-admin', 'ManavSathi Admin', 'admin@manavsathis.com', 'admin123', 'avatar-sulaiman', '+91 8197479540', 1],
   });
 
   const volunteerData: [string, string, string][] = [
@@ -302,28 +302,28 @@ function buildSeedStatements(): Stmt[] {
   const trackingSteps: [string, string, string, string | null, string | null, number, number][] = [
     // DON-2026-000123 — Completed (full journey, matches Track Your Donation screen)
     ['DON-2026-000123', 'Submitted', 'Your donation request has been submitted.', '03 Jul 2026', '10:30 AM', 1, 0],
-    ['DON-2026-000123', 'Accepted by ManavSaathi', 'ManavSaathi team has accepted your donation.', '03 Jul 2026', '02:15 PM', 1, 1],
+    ['DON-2026-000123', 'Accepted by ManavSathi', 'ManavSathi team has accepted your donation.', '03 Jul 2026', '02:15 PM', 1, 1],
     ['DON-2026-000123', 'Pickup Scheduled', 'A volunteer has been assigned for pickup.', '03 Jul 2026', '04:30 PM', 1, 2],
     ['DON-2026-000123', 'Collected', 'Your donation has been collected.', '04 Jul 2026', '11:30 AM', 1, 3],
     ['DON-2026-000123', 'Distributed', 'Your donation has been distributed to a family in need.', '05 Jul 2026', '04:00 PM', 1, 4],
     ['DON-2026-000123', 'Completed', 'Thank you for your generosity!', '05 Jul 2026', '04:30 PM', 1, 5],
     // DON-2026-000122 — Collected (in progress)
     ['DON-2026-000122', 'Submitted', 'Your donation request has been submitted.', '28 Jun 2026', '09:00 AM', 1, 0],
-    ['DON-2026-000122', 'Accepted by ManavSaathi', 'ManavSaathi team has accepted your donation.', '28 Jun 2026', '11:00 AM', 1, 1],
+    ['DON-2026-000122', 'Accepted by ManavSathi', 'ManavSathi team has accepted your donation.', '28 Jun 2026', '11:00 AM', 1, 1],
     ['DON-2026-000122', 'Pickup Scheduled', 'A volunteer has been assigned for pickup.', '28 Jun 2026', '01:00 PM', 1, 2],
     ['DON-2026-000122', 'Collected', 'Your donation has been collected.', '28 Jun 2026', '03:00 PM', 1, 3],
     ['DON-2026-000122', 'Distributed', 'Awaiting distribution to beneficiaries.', null, null, 0, 4],
     ['DON-2026-000122', 'Completed', 'Donation journey will be completed soon.', null, null, 0, 5],
     // DON-2026-000121 — Distributed
     ['DON-2026-000121', 'Submitted', 'Your donation request has been submitted.', '20 Jun 2026', '10:00 AM', 1, 0],
-    ['DON-2026-000121', 'Accepted by ManavSaathi', 'ManavSaathi team has accepted your donation.', '20 Jun 2026', '12:30 PM', 1, 1],
+    ['DON-2026-000121', 'Accepted by ManavSathi', 'ManavSathi team has accepted your donation.', '20 Jun 2026', '12:30 PM', 1, 1],
     ['DON-2026-000121', 'Pickup Scheduled', 'A volunteer has been assigned for pickup.', '20 Jun 2026', '03:00 PM', 1, 2],
     ['DON-2026-000121', 'Collected', 'Your donation has been collected.', '21 Jun 2026', '10:30 AM', 1, 3],
     ['DON-2026-000121', 'Distributed', 'Your donation has been distributed to a family in need.', '22 Jun 2026', '02:00 PM', 1, 4],
     ['DON-2026-000121', 'Completed', 'Donation journey will be completed soon.', null, null, 0, 5],
     // DON-2026-000120 — Completed
     ['DON-2026-000120', 'Submitted', 'Your donation request has been submitted.', '12 Jun 2026', '10:00 AM', 1, 0],
-    ['DON-2026-000120', 'Accepted by ManavSaathi', 'ManavSaathi team has accepted your donation.', '12 Jun 2026', '01:00 PM', 1, 1],
+    ['DON-2026-000120', 'Accepted by ManavSathi', 'ManavSathi team has accepted your donation.', '12 Jun 2026', '01:00 PM', 1, 1],
     ['DON-2026-000120', 'Pickup Scheduled', 'A volunteer has been assigned for pickup.', '12 Jun 2026', '03:30 PM', 1, 2],
     ['DON-2026-000120', 'Collected', 'Your donation has been collected.', '13 Jun 2026', '11:00 AM', 1, 3],
     ['DON-2026-000120', 'Distributed', 'Your donation has been distributed to a family in need.', '14 Jun 2026', '03:00 PM', 1, 4],
@@ -353,7 +353,7 @@ function buildSeedStatements(): Stmt[] {
   }
 
   const storyData: [string, string, string, string, string, string][] = [
-    ['story-1', 'Clothes', 'A warm smile and a new beginning', 'When we delivered warm clothes to the Sharma family, little Priya\'s smile reminded us why we do what we do.', 'Together with ManavSaathi, donors like you are making a lasting difference in communities across India.', 'story-clothes'],
+    ['story-1', 'Clothes', 'A warm smile and a new beginning', 'When we delivered warm clothes to the Sharma family, little Priya\'s smile reminded us why we do what we do.', 'Together with ManavSathi, donors like you are making a lasting difference in communities across India.', 'story-clothes'],
     ['story-2', 'Food', 'Nourishing hope in rural villages', 'Our food donation drive reached 200 families in remote villages, providing essential nutrition.', 'Every meal shared brings hope to a family in need.', 'story-food'],
     ['story-3', 'Books', 'Opening doors through education', 'Donated books helped set up a small library in a village school, inspiring young minds.', 'Education is the greatest gift we can give.', 'story-books'],
   ];
@@ -367,7 +367,7 @@ function buildSeedStatements(): Stmt[] {
   const notifs: [string, string, string, string, number, string][] = [
     ['notif-1', 'completed', 'Donation Completed', 'Your donation DON-2026-000123 has been completed successfully.', 0, '-2 hours'],
     ['notif-2', 'pickup', 'Pickup Scheduled', 'Volunteer Rohit will collect your items on 04 Jul between 10 AM - 12 PM.', 0, '-1 day'],
-    ['notif-3', 'accepted', 'Donation Accepted', 'ManavSaathi has accepted your clothes donation request.', 1, '-2 days'],
+    ['notif-3', 'accepted', 'Donation Accepted', 'ManavSathi has accepted your clothes donation request.', 1, '-2 days'],
     ['notif-4', 'submitted', 'Donation Submitted', 'Your donation request DON-2026-000122 has been submitted.', 1, '-3 days'],
   ];
   for (const [id, type, title, body, read, offset] of notifs) {
@@ -652,7 +652,7 @@ export const db = {
 
     const steps = [
       ['Submitted', 'Your donation request has been submitted.', 1],
-      ['Accepted by ManavSaathi', 'Awaiting verification.', 0],
+      ['Accepted by ManavSathi', 'Awaiting verification.', 0],
     ];
     for (let i = 0; i < steps.length; i++) {
       const [title, desc, done] = steps[i];
@@ -880,17 +880,17 @@ export const db = {
     const c = getClient();
     await c.execute({
       sql: `UPDATE donation_tracking SET is_completed = 1, step_date = date('now'), step_time = time('now')
-            WHERE donation_id = ? AND step_title = 'Accepted by ManavSaathi'`,
+            WHERE donation_id = ? AND step_title = 'Accepted by ManavSathi'`,
       args: [donationId],
     });
     const existing = await c.execute({
-      sql: `SELECT id FROM donation_tracking WHERE donation_id = ? AND step_title = 'Accepted by ManavSaathi'`,
+      sql: `SELECT id FROM donation_tracking WHERE donation_id = ? AND step_title = 'Accepted by ManavSathi'`,
       args: [donationId],
     });
     if (existing.rows.length === 0) {
       await c.execute({
         sql: `INSERT INTO donation_tracking (id, donation_id, step_title, step_description, step_date, step_time, is_completed, sort_order)
-              VALUES (?, ?, 'Accepted by ManavSaathi', 'ManavSaathi team has accepted your donation.', date('now'), time('now'), 1, 1)`,
+              VALUES (?, ?, 'Accepted by ManavSathi', 'ManavSathi team has accepted your donation.', date('now'), time('now'), 1, 1)`,
         args: [generateId(), donationId],
       });
     }
@@ -898,7 +898,7 @@ export const db = {
     if (don) {
       await c.execute({
         sql: 'INSERT INTO notifications (id, user_id, type, title, body) VALUES (?, ?, ?, ?, ?)',
-        args: [generateId(), don.user_id, 'accepted', 'Donation Accepted', `ManavSaathi has accepted your ${don.category_name} donation.`],
+        args: [generateId(), don.user_id, 'accepted', 'Donation Accepted', `ManavSathi has accepted your ${don.category_name} donation.`],
       });
     }
   },

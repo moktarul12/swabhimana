@@ -2,6 +2,7 @@ import { ImageSourcePropType } from 'react-native';
 
 export const LOCAL_IMAGES = {
   logoMark: require('../../assets/images/logo-mark.png'),
+  homeHero: require('../../assets/images/home-hero.png'),
   splashChildren: require('../../assets/images/splash-children.jpg'),
   homeFamily: require('../../assets/images/home-family.jpg'),
   onboardingDonation: require('../../assets/images/onboarding-donation.jpg'),

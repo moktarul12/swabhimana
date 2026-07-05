@@ -5,6 +5,7 @@ import { AppLogo } from '../components/AppLogo';
 import { Button } from '../components/Button';
 import { COLORS, FONT_SIZE, SPACING } from '../constants/theme';
 import { LOCAL_IMAGES } from '../constants/images';
+import { APP_NAME, APP_TAGLINE, MOTTO } from '../constants/branding';
 import { useAuth } from '../context/AuthContext';
 
 export default function WelcomeScreen({ navigation }: any) {
@@ -31,8 +32,8 @@ export default function WelcomeScreen({ navigation }: any) {
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.title}>Together for Humanity</Text>
-        <Text style={styles.subtitle}>Connect compassion with action through ManavSaathi.</Text>
+        <Text style={styles.title}>{APP_TAGLINE}</Text>
+        <Text style={styles.subtitle}>{MOTTO}</Text>
       </View>
 
       <View style={styles.footer}>

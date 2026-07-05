@@ -26,7 +26,7 @@ export default function NotificationSettingsScreen({ navigation }: any) {
     { key: 'donation_updates' as const, label: 'Donation Updates', desc: 'Get notified about your donation status' },
     { key: 'pickup_alerts' as const, label: 'Pickup Alerts', desc: 'Reminders for scheduled pickups' },
     { key: 'impact_stories' as const, label: 'Impact Stories', desc: 'New stories from the community' },
-    { key: 'promotional' as const, label: 'Promotional', desc: 'News and updates from ManavSaathi' },
+    { key: 'promotional' as const, label: 'Promotional', desc: 'News and updates from ManavSathi' },
   ];
 
   return (

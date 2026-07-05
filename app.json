@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "ManavSaathi",
+    "name": "ManavSathi",
     "slug": "manavsathi",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -31,14 +31,14 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "ManavSaathi needs access to your photos to upload donation images."
+          "photosPermission": "ManavSathi needs access to your photos to upload donation images."
         }
       ],
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "ManavSaathi needs your location to set pickup addresses.",
-          "locationWhenInUsePermission": "ManavSaathi needs your location to set pickup addresses."
+          "locationAlwaysAndWhenInUsePermission": "ManavSathi needs your location to set pickup addresses.",
+          "locationWhenInUsePermission": "ManavSathi needs your location to set pickup addresses."
         }
       ]
     ],

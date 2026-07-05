@@ -8,6 +8,7 @@ import { DEMO_USER } from '../constants/branding';
 import { useAuth } from '../context/AuthContext';
 
 const MENU_ITEMS = [
+  { icon: 'heart-outline' as const, label: 'About Us', screen: 'AboutUs' },
   { icon: 'person-outline' as const, label: 'Personal Information', screen: 'PersonalInfo' },
   { icon: 'location-outline' as const, label: 'My Addresses', screen: 'MyAddresses' },
   { icon: 'time-outline' as const, label: 'My Donations', screen: 'HistoryTab', tab: true },
