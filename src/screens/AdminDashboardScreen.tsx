@@ -1,6 +1,6 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, FlatList, Alert, RefreshControl,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, FlatList, Alert, RefreshControl, TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -10,6 +10,7 @@ import { StatusBadge } from '../components/StatusBadge';
 import { Button } from '../components/Button';
 import {
   db, AdminDonation, Volunteer, DonationStatus, formatDonationDate,
+  getAdminSession, clearAdminSession,
 } from '../services/database';
 import { useIsDesktop } from '../hooks/useIsDesktop';
 
@@ -25,14 +26,35 @@ const STATUS_OPTIONS: DonationStatus[] = ['pending', 'collected', 'distributed',
 
 export default function AdminDashboardScreen({ navigation, route }: any) {
   const isDesktop = useIsDesktop();
-  const admin = route.params?.admin;
+  const [admin, setAdmin] = useState(route.params?.admin);
   const [donations, setDonations] = useState<AdminDonation[]>([]);
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [filter, setFilter] = useState<DonationStatus | 'all'>('all');
   const [selected, setSelected] = useState<AdminDonation | null>(null);
   const [showVolunteerModal, setShowVolunteerModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showAddVolunteerModal, setShowAddVolunteerModal] = useState(false);
+  const [newVolName, setNewVolName] = useState('');
+  const [newVolPhone, setNewVolPhone] = useState('');
+  const [newVolEmail, setNewVolEmail] = useState('');
+  const [newVolPassword, setNewVolPassword] = useState('');
+  const [addingVolunteer, setAddingVolunteer] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    if (!admin) {
+      (async () => {
+        const id = await getAdminSession();
+        if (id) {
+          const u = await db.getUserById(id);
+          if (u) setAdmin(u);
+          else navigation.replace('AdminLogin');
+        } else {
+          navigation.replace('AdminLogin');
+        }
+      })();
+    }
+  }, [admin, navigation]);
 
   const load = useCallback(async () => {
     const [d, v] = await Promise.all([
@@ -82,6 +104,36 @@ export default function AdminDashboardScreen({ navigation, route }: any) {
     }
   };
 
+  const handleAddVolunteer = async () => {
+    if (!newVolName || !newVolPhone || !newVolEmail || !newVolPassword) {
+      Alert.alert('Missing fields', 'Please fill name, phone, email and password.');
+      return;
+    }
+    const name = newVolName;
+    setAddingVolunteer(true);
+    try {
+      await db.addVolunteer(name, newVolPhone, newVolEmail, newVolPassword);
+      setShowAddVolunteerModal(false);
+      setNewVolName('');
+      setNewVolPhone('');
+      setNewVolEmail('');
+      setNewVolPassword('');
+      load();
+      Alert.alert('Volunteer Added', `${name} can now login at /volunteer`);
+    } catch (e: any) {
+      Alert.alert('Error', e.message?.includes('UNIQUE') ? 'Email already exists.' : 'Failed to add volunteer.');
+    } finally {
+      setAddingVolunteer(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await clearAdminSession();
+    navigation.replace('AdminLogin');
+  };
+
+  if (!admin) return null;
+
   if (!isDesktop) {
     return (
       <View style={styles.blocked}>
@@ -113,8 +165,12 @@ export default function AdminDashboardScreen({ navigation, route }: any) {
             <Text style={styles.statPillValue}>{volunteers.length}</Text>
             <Text style={styles.statPillLabel}>Volunteers</Text>
           </View>
+          <TouchableOpacity style={styles.addVolBtn} onPress={() => setShowAddVolunteerModal(true)}>
+            <Ionicons name="person-add" size={18} color={COLORS.white} />
+            <Text style={styles.addVolText}>Add Volunteer</Text>
+          </TouchableOpacity>
           <Text style={styles.adminName}>{admin?.name || 'Admin'}</Text>
-          <TouchableOpacity onPress={() => navigation.replace('AdminLogin')} style={styles.logoutBtn}>
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
             <Ionicons name="log-out-outline" size={20} color={COLORS.white} />
             <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>
@@ -224,12 +280,32 @@ export default function AdminDashboardScreen({ navigation, route }: any) {
                   <View style={{ flex: 1 }}>
                     <Text style={styles.volItemName}>{item.name}</Text>
                     <Text style={styles.volItemPhone}>{item.phone}</Text>
+                    {item.email ? <Text style={styles.volItemEmail}>{item.email}</Text> : null}
                   </View>
                   <Ionicons name="chevron-forward" size={20} color={COLORS.textLight} />
                 </TouchableOpacity>
               )}
             />
             <Button title="Cancel" variant="outline" onPress={() => setShowVolunteerModal(false)} fullWidth />
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={showAddVolunteerModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Add Volunteer (Assignee)</Text>
+            <Text style={styles.modalSub}>They can login at /volunteer to see assigned pickups</Text>
+            <Text style={styles.fieldLabel}>Full Name</Text>
+            <TextInput style={styles.fieldInput} value={newVolName} onChangeText={setNewVolName} placeholder="e.g. Rahul Kumar" placeholderTextColor={COLORS.textLight} />
+            <Text style={styles.fieldLabel}>Phone</Text>
+            <TextInput style={styles.fieldInput} value={newVolPhone} onChangeText={setNewVolPhone} placeholder="10-digit mobile" keyboardType="phone-pad" placeholderTextColor={COLORS.textLight} />
+            <Text style={styles.fieldLabel}>Email (login)</Text>
+            <TextInput style={styles.fieldInput} value={newVolEmail} onChangeText={setNewVolEmail} autoCapitalize="none" keyboardType="email-address" placeholder="volunteer@manavsathis.com" placeholderTextColor={COLORS.textLight} />
+            <Text style={styles.fieldLabel}>Password</Text>
+            <TextInput style={styles.fieldInput} value={newVolPassword} onChangeText={setNewVolPassword} secureTextEntry placeholder="Set login password" placeholderTextColor={COLORS.textLight} />
+            <Button title={addingVolunteer ? 'Adding...' : 'Add Volunteer'} onPress={handleAddVolunteer} fullWidth disabled={addingVolunteer} />
+            <Button title="Cancel" variant="outline" onPress={() => setShowAddVolunteerModal(false)} fullWidth style={{ marginTop: SPACING.sm }} />
           </View>
         </View>
       </Modal>
@@ -271,6 +347,12 @@ const styles = StyleSheet.create({
   statPillValue: { fontSize: FONT_SIZE.xl, fontWeight: '700', color: COLORS.white },
   statPillLabel: { fontSize: FONT_SIZE.xs, color: 'rgba(255,255,255,0.8)' },
   adminName: { fontSize: FONT_SIZE.md, color: COLORS.white, fontWeight: '500' },
+  addVolBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.round,
+  },
+  addVolText: { color: COLORS.white, fontSize: FONT_SIZE.sm, fontWeight: '600' },
   logoutBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, padding: SPACING.sm },
   logoutText: { color: COLORS.white, fontSize: FONT_SIZE.sm, fontWeight: '600' },
   filterRow: { flexDirection: 'row', padding: SPACING.lg, gap: SPACING.sm, flexWrap: 'wrap' },
@@ -311,6 +393,12 @@ const styles = StyleSheet.create({
   volInitial: { fontSize: FONT_SIZE.lg, fontWeight: '700', color: COLORS.primary },
   volItemName: { fontSize: FONT_SIZE.md, fontWeight: '600', color: COLORS.textDark },
   volItemPhone: { fontSize: FONT_SIZE.sm, color: COLORS.textMedium },
+  volItemEmail: { fontSize: FONT_SIZE.xs, color: COLORS.textLight },
+  fieldLabel: { fontSize: FONT_SIZE.sm, fontWeight: '600', color: COLORS.textDark, marginBottom: 4, marginTop: SPACING.sm },
+  fieldInput: {
+    borderWidth: 1, borderColor: COLORS.border, borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.md, fontSize: FONT_SIZE.md, color: COLORS.textDark, marginBottom: SPACING.sm,
+  },
   statusOption: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: SPACING.md, borderRadius: BORDER_RADIUS.md, marginBottom: SPACING.sm, borderWidth: 1, borderColor: COLORS.borderLight },
   statusOptionActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryLighter },
   blocked: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: SPACING.xxl },

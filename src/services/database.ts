@@ -56,6 +56,7 @@ export interface Volunteer {
   id: string;
   name: string;
   phone: string;
+  email: string | null;
   is_active: number;
 }
 
@@ -83,6 +84,7 @@ export interface ItemDonation {
   pickup_date: string | null;
   pickup_time: string | null;
   contact_number: string | null;
+  volunteer_id: string | null;
   volunteer_name: string | null;
   volunteer_phone: string | null;
   delivery_date: string | null;
@@ -143,7 +145,7 @@ export interface NotificationSettings {
   promotional: number;
 }
 
-const SCHEMA_VERSION = 6;
+const SCHEMA_VERSION = 7;
 
 const SCHEMA_DDL = `
 CREATE TABLE IF NOT EXISTS app_meta (key TEXT PRIMARY KEY, value TEXT);
@@ -155,6 +157,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 CREATE TABLE IF NOT EXISTS volunteers (
   id TEXT PRIMARY KEY, name TEXT NOT NULL, phone TEXT NOT NULL,
+  email TEXT UNIQUE, password TEXT,
   is_active INTEGER DEFAULT 1
 );
 CREATE TABLE IF NOT EXISTS item_categories (
@@ -171,7 +174,7 @@ CREATE TABLE IF NOT EXISTS item_donations (
   quantity INTEGER NOT NULL, condition TEXT NOT NULL, description TEXT,
   status TEXT NOT NULL DEFAULT 'pending', image_key TEXT,
   pickup_address TEXT NOT NULL, pickup_date TEXT, pickup_time TEXT,
-  contact_number TEXT, volunteer_name TEXT, volunteer_phone TEXT,
+  contact_number TEXT, volunteer_id TEXT, volunteer_name TEXT, volunteer_phone TEXT,
   delivery_date TEXT, created_at TEXT DEFAULT (datetime('now'))
 );
 CREATE TABLE IF NOT EXISTS donation_photos (
@@ -234,18 +237,18 @@ function buildSeedStatements(): Stmt[] {
     args: ['user-admin', 'ManavSathi Admin', 'admin@manavsathis.com', 'admin123', 'avatar-sulaiman', '+91 8197479540', 1],
   });
 
-  const volunteerData: [string, string, string][] = [
-    ['vol-1', 'Rohit Sharma', '9876543210'],
-    ['vol-2', 'Priya Nair', '9876500011'],
-    ['vol-3', 'Amit Verma', '9876500022'],
-    ['vol-4', 'Sneha Reddy', '9876500033'],
-    ['vol-5', 'Karan Patel', '9876500044'],
-    ['vol-6', 'Meera Joshi', '9876500055'],
+  const volunteerData: [string, string, string, string, string][] = [
+    ['vol-1', 'Rohit Sharma', '9876543210', 'rohit@manavsathis.com', 'volunteer123'],
+    ['vol-2', 'Priya Nair', '9876500011', 'priya@manavsathis.com', 'volunteer123'],
+    ['vol-3', 'Amit Verma', '9876500022', 'amit@manavsathis.com', 'volunteer123'],
+    ['vol-4', 'Sneha Reddy', '9876500033', 'sneha@manavsathis.com', 'volunteer123'],
+    ['vol-5', 'Karan Patel', '9876500044', 'karan@manavsathis.com', 'volunteer123'],
+    ['vol-6', 'Meera Joshi', '9876500055', 'meera@manavsathis.com', 'volunteer123'],
   ];
-  for (const [id, name, phone] of volunteerData) {
+  for (const [id, name, phone, email, password] of volunteerData) {
     stmts.push({
-      sql: `INSERT INTO volunteers (id, name, phone, is_active) VALUES (?, ?, ?, 1)`,
-      args: [id, name, phone],
+      sql: `INSERT INTO volunteers (id, name, phone, email, password, is_active) VALUES (?, ?, ?, ?, ?, 1)`,
+      args: [id, name, phone, email, password],
     });
   }
 
@@ -283,19 +286,19 @@ function buildSeedStatements(): Stmt[] {
     args: ['addr-2', 'user-sulaiman', 'Office', 'Koramangala 8th Block, Rajendra Nagar, Bengaluru - 560096', '+91 8197479540', 12.9352, 77.6245],
   });
 
-  // [id, categoryId, qty, condition, description, status, imageKey, pickupDate, pickupTime, volunteerName, volunteerPhone, deliveryDate, createdAt]
-  const donations: Array<[string, string, number, string, string, DonationStatus, string, string, string, string | null, string | null, string | null, string]> = [
-    ['DON-2026-000123', 'cat-clothes', 15, 'Good', "Men's and Women's clothes in good condition.", 'completed', 'donation-clothes', '04 Jul 2026', '10:00 AM - 12:00 PM', 'Rohit Sharma', '9876543210', '05 Jul 2026', '2026-07-04T11:30:00'],
-    ['DON-2026-000122', 'cat-food', 5, 'New', 'Packaged food items and grains for families in need.', 'collected', 'donation-food', '28 Jun 2026', '02:00 PM - 04:00 PM', 'Priya Nair', '9876500011', null, '2026-06-28T15:00:00'],
-    ['DON-2026-000121', 'cat-books', 20, 'Good', 'Textbooks and storybooks for school children.', 'distributed', 'donation-books', '20 Jun 2026', '10:00 AM - 12:00 PM', 'Amit Verma', '9876500022', '22 Jun 2026', '2026-06-20T10:30:00'],
-    ['DON-2026-000120', 'cat-toys', 8, 'Good', 'Soft toys and board games for children.', 'completed', 'donation-toys', '12 Jun 2026', '10:00 AM - 12:00 PM', 'Sneha Reddy', '9876500033', '14 Jun 2026', '2026-06-12T11:00:00'],
+  // [id, categoryId, qty, condition, description, status, imageKey, pickupDate, pickupTime, volId, volunteerName, volunteerPhone, deliveryDate, createdAt]
+  const donations: Array<[string, string, number, string, string, DonationStatus, string, string, string, string | null, string | null, string | null, string | null, string]> = [
+    ['DON-2026-000123', 'cat-clothes', 15, 'Good', "Men's and Women's clothes in good condition.", 'completed', 'donation-clothes', '04 Jul 2026', '10:00 AM - 12:00 PM', 'vol-1', 'Rohit Sharma', '9876543210', '05 Jul 2026', '2026-07-04T11:30:00'],
+    ['DON-2026-000122', 'cat-food', 5, 'New', 'Packaged food items and grains for families in need.', 'collected', 'donation-food', '28 Jun 2026', '02:00 PM - 04:00 PM', 'vol-2', 'Priya Nair', '9876500011', null, '2026-06-28T15:00:00'],
+    ['DON-2026-000121', 'cat-books', 20, 'Good', 'Textbooks and storybooks for school children.', 'distributed', 'donation-books', '20 Jun 2026', '10:00 AM - 12:00 PM', 'vol-3', 'Amit Verma', '9876500022', '22 Jun 2026', '2026-06-20T10:30:00'],
+    ['DON-2026-000120', 'cat-toys', 8, 'Good', 'Soft toys and board games for children.', 'completed', 'donation-toys', '12 Jun 2026', '10:00 AM - 12:00 PM', 'vol-4', 'Sneha Reddy', '9876500033', '14 Jun 2026', '2026-06-12T11:00:00'],
   ];
   for (const d of donations) {
-    const [id, catId, qty, cond, desc, status, img, pDate, pTime, volName, volPhone, delDate, createdAt] = d;
+    const [id, catId, qty, cond, desc, status, img, pDate, pTime, volId, volName, volPhone, delDate, createdAt] = d;
     stmts.push({
-      sql: `INSERT INTO item_donations (id, user_id, category_id, quantity, condition, description, status, image_key, pickup_address, pickup_date, pickup_time, contact_number, volunteer_name, volunteer_phone, delivery_date, created_at)
-            VALUES (?, 'user-sulaiman', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      args: [id, catId, qty, cond, desc, status, img, HOME_ADDRESS, pDate, pTime, '+91 8197479540', volName, volPhone, delDate, createdAt],
+      sql: `INSERT INTO item_donations (id, user_id, category_id, quantity, condition, description, status, image_key, pickup_address, pickup_date, pickup_time, contact_number, volunteer_id, volunteer_name, volunteer_phone, delivery_date, created_at)
+            VALUES (?, 'user-sulaiman', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [id, catId, qty, cond, desc, status, img, HOME_ADDRESS, pDate, pTime, '+91 8197479540', volId, volName, volPhone, delDate, createdAt],
     });
   }
 
@@ -449,6 +452,7 @@ function mapItemDonation(row: Record<string, unknown>): ItemDonation {
     pickup_date: row.pickup_date as string | null,
     pickup_time: row.pickup_time as string | null,
     contact_number: row.contact_number as string | null,
+    volunteer_id: row.volunteer_id as string | null,
     volunteer_name: row.volunteer_name as string | null,
     volunteer_phone: row.volunteer_phone as string | null,
     delivery_date: row.delivery_date as string | null,
@@ -775,12 +779,60 @@ export const db = {
 
   async getVolunteers(): Promise<Volunteer[]> {
     const c = getClient();
-    const result = await c.execute('SELECT * FROM volunteers WHERE is_active = 1 ORDER BY name');
+    const result = await c.execute('SELECT id, name, phone, email, is_active FROM volunteers WHERE is_active = 1 ORDER BY name');
     return result.rows.map(r => ({
       id: r.id as string,
       name: r.name as string,
       phone: r.phone as string,
+      email: r.email as string | null,
       is_active: r.is_active as number,
+    }));
+  },
+
+  async volunteerLogin(email: string, password: string): Promise<Volunteer> {
+    const c = getClient();
+    const result = await c.execute({
+      sql: 'SELECT id, name, phone, email, is_active FROM volunteers WHERE email = ? AND password = ? AND is_active = 1',
+      args: [email.toLowerCase(), password],
+    });
+    if (result.rows.length === 0) throw new Error('Invalid volunteer credentials');
+    const r = result.rows[0];
+    return {
+      id: r.id as string,
+      name: r.name as string,
+      phone: r.phone as string,
+      email: r.email as string | null,
+      is_active: r.is_active as number,
+    };
+  },
+
+  async addVolunteer(name: string, phone: string, email: string, password: string): Promise<Volunteer> {
+    const c = getClient();
+    const id = generateId();
+    await c.execute({
+      sql: 'INSERT INTO volunteers (id, name, phone, email, password, is_active) VALUES (?, ?, ?, ?, ?, 1)',
+      args: [id, name, phone, email.toLowerCase(), password],
+    });
+    return { id, name, phone, email: email.toLowerCase(), is_active: 1 };
+  },
+
+  async getDonationsForVolunteer(volunteerId: string): Promise<AdminDonation[]> {
+    const c = getClient();
+    const result = await c.execute({
+      sql: `SELECT d.*, c.name as category_name, c.icon as category_icon, c.color as category_color,
+            u.name as donor_name, u.email as donor_email, u.phone as donor_phone
+            FROM item_donations d
+            JOIN item_categories c ON d.category_id = c.id
+            JOIN users u ON d.user_id = u.id
+            WHERE d.volunteer_id = ?
+            ORDER BY d.created_at DESC`,
+      args: [volunteerId],
+    });
+    return result.rows.map(r => ({
+      ...mapItemDonation(r as Record<string, unknown>),
+      donor_name: r.donor_name as string,
+      donor_email: r.donor_email as string,
+      donor_phone: r.donor_phone as string | null,
     }));
   },
 
@@ -813,8 +865,8 @@ export const db = {
     const name = vol.rows[0].name as string;
     const phone = vol.rows[0].phone as string;
     await c.execute({
-      sql: 'UPDATE item_donations SET volunteer_name = ?, volunteer_phone = ? WHERE id = ?',
-      args: [name, phone, donationId],
+      sql: 'UPDATE item_donations SET volunteer_id = ?, volunteer_name = ?, volunteer_phone = ? WHERE id = ?',
+      args: [volunteerId, name, phone, donationId],
     });
     const don = await this.getItemDonationById(donationId);
     if (don) {
@@ -931,6 +983,34 @@ export async function getSession(): Promise<string | null> {
 
 export async function clearSession(): Promise<void> {
   await webStorage.deleteItemAsync(SESSION_KEY);
+}
+
+const VOLUNTEER_SESSION_KEY = 'manavsathi_volunteer_session';
+
+export async function saveVolunteerSession(volunteerId: string): Promise<void> {
+  await webStorage.setItemAsync(VOLUNTEER_SESSION_KEY, volunteerId);
+}
+
+export async function getVolunteerSession(): Promise<string | null> {
+  return webStorage.getItemAsync(VOLUNTEER_SESSION_KEY);
+}
+
+export async function clearVolunteerSession(): Promise<void> {
+  await webStorage.deleteItemAsync(VOLUNTEER_SESSION_KEY);
+}
+
+const ADMIN_SESSION_KEY = 'manavsathi_admin_session';
+
+export async function saveAdminSession(userId: string): Promise<void> {
+  await webStorage.setItemAsync(ADMIN_SESSION_KEY, userId);
+}
+
+export async function getAdminSession(): Promise<string | null> {
+  return webStorage.getItemAsync(ADMIN_SESSION_KEY);
+}
+
+export async function clearAdminSession(): Promise<void> {
+  await webStorage.deleteItemAsync(ADMIN_SESSION_KEY);
 }
 
 export function formatDonationDate(dateStr: string): string {

@@ -16,6 +16,12 @@ export const ADMIN_USER = {
   password: 'admin123',
 };
 
+export const VOLUNTEER_USER = {
+  name: 'Rohit Sharma',
+  email: 'rohit@manavsathis.com',
+  password: 'volunteer123',
+};
+
 export const CONTACT = {
   name: 'Sulaiman Shariff',
   phone: '+91 8197479540',

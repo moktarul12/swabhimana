@@ -31,6 +31,8 @@ import InfoContentScreen from '../screens/InfoContentScreen';
 import AboutUsScreen from '../screens/AboutUsScreen';
 import AdminLoginScreen from '../screens/AdminLoginScreen';
 import AdminDashboardScreen from '../screens/AdminDashboardScreen';
+import VolunteerLoginScreen from '../screens/VolunteerLoginScreen';
+import VolunteerDashboardScreen from '../screens/VolunteerDashboardScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -39,8 +41,11 @@ const linking = {
   prefixes: ['manavsathi://', 'http://localhost:8081', 'https://manavsathis.com'],
   config: {
     screens: {
+      Main: 'app',
       AdminLogin: 'admin',
       AdminDashboard: 'admin/dashboard',
+      VolunteerLogin: 'volunteer',
+      VolunteerDashboard: 'volunteer/dashboard',
     },
   },
 };
@@ -103,6 +108,8 @@ export default function AppNavigator() {
           <Stack.Screen name="AboutUs" component={AboutUsScreen} />
           <Stack.Screen name="AdminLogin" component={AdminLoginScreen} />
           <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
+          <Stack.Screen name="VolunteerLogin" component={VolunteerLoginScreen} />
+          <Stack.Screen name="VolunteerDashboard" component={VolunteerDashboardScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </DonateProvider>
