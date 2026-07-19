@@ -6,9 +6,12 @@ import { DonationStepper } from '../components/DonationStepper';
 import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS } from '../constants/theme';
 import { db, ItemCategory } from '../services/database';
 import { useDonate } from '../context/DonateContext';
+import { useAuth } from '../context/AuthContext';
+import { GuestGate } from '../components/GuestGate';
 
 export default function DonateCategoryScreen({ navigation }: any) {
   const { updateForm } = useDonate();
+  const { isSignedIn } = useAuth();
   const [categories, setCategories] = useState<ItemCategory[]>([]);
 
   useEffect(() => {
@@ -16,9 +19,25 @@ export default function DonateCategoryScreen({ navigation }: any) {
   }, []);
 
   const selectCategory = (cat: ItemCategory) => {
+    if (!isSignedIn) {
+      navigation.getParent()?.navigate('Login');
+      return;
+    }
     updateForm({ categoryId: cat.id, category: cat.name, categoryIcon: cat.icon, categoryColor: cat.color });
     navigation.navigate('DonateDetails');
   };
+
+  if (!isSignedIn) {
+    return (
+      <View style={styles.container}>
+        <ScreenHeader title="Donate an Item" onBack={() => navigation.goBack()} />
+        <GuestGate
+          title="Login to donate"
+          message="Sign in so we can schedule pickup, assign a volunteer, and keep you updated on your donation."
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

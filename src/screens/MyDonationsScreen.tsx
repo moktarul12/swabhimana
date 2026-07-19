@@ -8,6 +8,7 @@ import { COLORS, FONT_SIZE, SPACING, BORDER_RADIUS } from '../constants/theme';
 import { db, ItemDonation } from '../services/database';
 import { DonationCard } from '../components/DonationCard';
 import { useAuth } from '../context/AuthContext';
+import { GuestGate } from '../components/GuestGate';
 
 type TabKey = 'all' | 'pending' | 'completed';
 const TABS: { key: TabKey; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
@@ -18,13 +19,17 @@ const TABS: { key: TabKey; label: string; icon: keyof typeof Ionicons.glyphMap }
 
 export default function MyDonationsScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
+  const { user, isSignedIn } = useAuth();
   const [activeTab, setActiveTab] = useState<TabKey>('all');
   const [donations, setDonations] = useState<ItemDonation[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setDonations([]);
+      setRefreshing(false);
+      return;
+    }
     const data = await db.getItemDonations(user.id, activeTab);
     setDonations(data);
     setRefreshing(false);
@@ -33,6 +38,21 @@ export default function MyDonationsScreen({ navigation }: any) {
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const pendingCount = donations.filter(d => d.status !== 'completed').length;
+
+  if (!isSignedIn) {
+    return (
+      <View style={styles.container}>
+        <LinearGradient colors={['#F1F8F1', COLORS.white]} style={[styles.header, { paddingTop: insets.top + SPACING.md }]}>
+          <Text style={styles.headerTitle}>My Donations</Text>
+          <Text style={styles.headerSub}>Track every item you've shared with love</Text>
+        </LinearGradient>
+        <GuestGate
+          title="Login to see your donations"
+          message="Your donation history and tracking appear here after you sign in."
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

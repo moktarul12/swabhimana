@@ -11,6 +11,7 @@ import { db, ImpactStats, ItemCategory, ItemDonation } from '../services/databas
 import { APP_NAME, ABOUT_INTRO } from '../constants/branding';
 import { useAuth } from '../context/AuthContext';
 import { useDonate } from '../context/DonateContext';
+import { GuestGate } from '../components/GuestGate';
 
 const STAT_META = [
   { key: 'total_volunteers' as const, icon: 'people' as const, label: 'Volunteers', color: '#1B5E20' },
@@ -50,13 +51,13 @@ const PROGRAMS: Program[] = [
 
 export default function HomeScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
+  const { user, isGuest, isSignedIn } = useAuth();
   const { updateForm } = useDonate();
   const [stats, setStats] = useState<ImpactStats | null>(null);
   const [categories, setCategories] = useState<ItemCategory[]>([]);
   const [recentDonations, setRecentDonations] = useState<ItemDonation[]>([]);
   const [unread, setUnread] = useState(0);
-  const firstName = user?.name?.split(' ')[0] || 'Sulaiman';
+  const firstName = user?.name?.split(' ')[0] || (isGuest ? 'Guest' : 'Friend');
 
   const loadData = useCallback(async () => {
     db.getImpactStats().then(setStats);
@@ -64,6 +65,9 @@ export default function HomeScreen({ navigation }: any) {
     if (user) {
       db.getUnreadCount(user.id).then(setUnread);
       db.getItemDonations(user.id, 'all').then((d) => setRecentDonations(d.slice(0, 3)));
+    } else {
+      setUnread(0);
+      setRecentDonations([]);
     }
   }, [user]);
 
@@ -72,13 +76,29 @@ export default function HomeScreen({ navigation }: any) {
 
   const rootNav = () => navigation.getParent();
 
+  const requireLogin = (then?: () => void) => {
+    if (isSignedIn) {
+      then?.();
+      return true;
+    }
+    rootNav()?.navigate('Login');
+    return false;
+  };
+
   const navigate = (screen: string) => {
-    if (screen === 'DonateTab' || screen === 'HistoryTab') navigation.navigate(screen);
-    else if (screen === 'TrackDonation') rootNav()?.navigate('TrackDonation', { id: recentDonations[0]?.id || 'DON-2026-000123' });
-    else rootNav()?.navigate(screen);
+    if (screen === 'DonateTab' || screen === 'HistoryTab') {
+      if (!requireLogin(() => navigation.navigate(screen))) return;
+      return;
+    }
+    if (screen === 'TrackDonation') {
+      if (!requireLogin(() => rootNav()?.navigate('TrackDonation', { id: recentDonations[0]?.id || 'DON-2026-000123' }))) return;
+      return;
+    }
+    rootNav()?.navigate(screen);
   };
 
   const startDonation = (cat: ItemCategory) => {
+    if (!requireLogin()) return;
     updateForm({ categoryId: cat.id, category: cat.name, categoryIcon: cat.icon, categoryColor: cat.color });
     navigation.navigate('DonateTab', { screen: 'DonateDetails' });
   };
@@ -95,11 +115,18 @@ export default function HomeScreen({ navigation }: any) {
               <Text style={styles.brandTagline}>Together, we change lives</Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.bellBtn} onPress={() => rootNav()?.navigate('Notifications')}>
+          <TouchableOpacity
+            style={styles.bellBtn}
+            onPress={() => {
+              if (!requireLogin(() => rootNav()?.navigate('Notifications'))) return;
+            }}
+          >
             <Ionicons name="notifications-outline" size={22} color={COLORS.textDark} />
             {unread > 0 && <View style={styles.badge} />}
           </TouchableOpacity>
         </View>
+
+        {isGuest && <GuestGate compact />}
 
         {/* HERO */}
         <View style={styles.hero}>
@@ -110,7 +137,7 @@ export default function HomeScreen({ navigation }: any) {
             <Ionicons name="heart" size={18} color={COLORS.primary} />
           </View>
           <View style={styles.heroText}>
-            <Text style={styles.welcomeLabel}>Welcome back,</Text>
+            <Text style={styles.welcomeLabel}>{isSignedIn ? 'Welcome back,' : 'Welcome,'}</Text>
             <Text style={styles.welcomeName}>{firstName} 👋</Text>
             <Text style={styles.heroHeadline}>
               Small acts,{'\n'}<Text style={styles.heroHeadlineAccent}>big change.</Text>

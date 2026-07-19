@@ -58,6 +58,13 @@ function goVolunteer() {
   if (typeof window !== 'undefined') window.location.href = '/volunteer';
 }
 
+function openAppAsGuest() {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('manavsathi_guest', '1');
+    window.location.href = '/app';
+  }
+}
+
 export function DesktopSite() {
   const [navHover, setNavHover] = useState<string | null>(null);
   const [showLogin, setShowLogin] = useState(false);
@@ -94,6 +101,10 @@ export function DesktopSite() {
                 <Text style={styles.navLinkText}>{item.label}</Text>
               </TouchableOpacity>
             ))}
+            <TouchableOpacity style={styles.navBrowseBtn} onPress={openAppAsGuest}>
+              <Ionicons name="phone-portrait-outline" size={16} color={COLORS.primary} />
+              <Text style={styles.navBrowseText}>Browse App</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.navLoginBtn} onPress={() => openLogin('donor')}>
               <Ionicons name="log-in-outline" size={16} color={COLORS.primary} />
               <Text style={styles.navLoginText}>Login</Text>
@@ -120,12 +131,12 @@ export function DesktopSite() {
             </Text>
             <Text style={styles.heroSub}>{ABOUT_INTRO}</Text>
             <View style={styles.heroActions}>
-              <TouchableOpacity style={styles.heroPrimaryBtn} onPress={() => openLogin('donor')}>
-                <Ionicons name="log-in-outline" size={18} color={COLORS.white} />
-                <Text style={styles.heroPrimaryText}>Login to Donate</Text>
+              <TouchableOpacity style={styles.heroPrimaryBtn} onPress={openAppAsGuest}>
+                <Ionicons name="compass-outline" size={18} color={COLORS.white} />
+                <Text style={styles.heroPrimaryText}>Browse as Guest</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.heroGhostBtn} onPress={() => scrollTo('about')}>
-                <Text style={styles.heroGhostText}>Learn More</Text>
+              <TouchableOpacity style={styles.heroGhostBtn} onPress={() => openLogin('donor')}>
+                <Text style={styles.heroGhostText}>Login to Donate</Text>
                 <Ionicons name="arrow-forward" size={16} color={COLORS.primary} />
               </TouchableOpacity>
             </View>
@@ -366,6 +377,13 @@ const styles = StyleSheet.create({
   navLink: { paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm, borderRadius: BORDER_RADIUS.round },
   navLinkHover: { backgroundColor: COLORS.primaryPale },
   navLinkText: { fontSize: FONT_SIZE.md, fontWeight: '600', color: COLORS.textDark },
+  navBrowseBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm + 2,
+    borderRadius: BORDER_RADIUS.round, backgroundColor: COLORS.primaryPale,
+    marginLeft: SPACING.sm,
+  },
+  navBrowseText: { fontSize: FONT_SIZE.sm, fontWeight: '700', color: COLORS.primary },
   navLoginBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm + 2,

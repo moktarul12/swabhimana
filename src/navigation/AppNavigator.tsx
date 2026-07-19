@@ -38,14 +38,26 @@ const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 const linking = {
-  prefixes: ['manavsathi://', 'http://localhost:8081', 'https://manavsathis.com'],
+  prefixes: [
+    'manavsathi://',
+    'http://localhost:8081',
+    'https://manavsathis.com',
+    'https://manavsathi.com',
+    'https://www.manavsathi.com',
+    'https://manavsathi-render.onrender.com',
+  ],
   config: {
     screens: {
       Main: 'app',
+      Welcome: 'welcome',
+      Login: 'login',
+      SignUp: 'signup',
       AdminLogin: 'admin',
       AdminDashboard: 'admin/dashboard',
       VolunteerLogin: 'volunteer',
       VolunteerDashboard: 'volunteer/dashboard',
+      AboutUs: 'about',
+      Stories: 'stories',
     },
   },
 };
@@ -80,9 +92,9 @@ function MainTabs() {
 }
 
 export default function AppNavigator() {
-  const { user, isLoading } = useAuth();
+  const { user, isGuest, isLoading } = useAuth();
   if (isLoading) return null;
-  const initialRoute = user ? 'Main' : 'Splash';
+  const initialRoute = user || isGuest ? 'Main' : 'Splash';
 
   return (
     <DonateProvider>

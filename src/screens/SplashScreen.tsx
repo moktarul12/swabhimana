@@ -1,18 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, Image, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppLogo } from '../components/AppLogo';
 import { COLORS, FONT_SIZE, SPACING } from '../constants/theme';
 import { APP_NAME, APP_TAGLINE } from '../constants/branding';
 import { LOCAL_IMAGES } from '../constants/images';
+import { useAuth } from '../context/AuthContext';
 
 export default function SplashScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
+  const { user, isGuest, isLoading } = useAuth();
 
   useEffect(() => {
-    const timer = setTimeout(() => navigation.replace('Welcome'), 2500);
+    if (isLoading) return;
+    const delay = Platform.OS === 'web' ? 800 : 2500;
+    const timer = setTimeout(() => {
+      if (user || isGuest) navigation.replace('Main');
+      else navigation.replace('Welcome');
+    }, delay);
     return () => clearTimeout(timer);
-  }, []);
+  }, [isLoading, user, isGuest, navigation]);
 
   return (
     <View style={styles.container}>

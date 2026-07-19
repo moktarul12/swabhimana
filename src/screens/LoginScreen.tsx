@@ -7,7 +7,7 @@ import { DEMO_USER } from '../constants/branding';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginScreen({ navigation }: any) {
-  const { login } = useAuth();
+  const { login, continueAsGuest } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -31,6 +31,11 @@ export default function LoginScreen({ navigation }: any) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGuest = async () => {
+    await continueAsGuest();
+    navigation.replace('Main');
   };
 
   return (
@@ -87,6 +92,9 @@ export default function LoginScreen({ navigation }: any) {
             Don't have an account?{' '}
             <Text style={styles.linkText} onPress={() => navigation.navigate('SignUp')}>Sign Up</Text>
           </Text>
+          <TouchableOpacity onPress={handleGuest} style={styles.guestBtn}>
+            <Text style={styles.guestText}>Continue as Guest</Text>
+          </TouchableOpacity>
           <Text style={styles.demoHint}>Demo: {DEMO_USER.email} / {DEMO_USER.password}</Text>
         </View>
       </ScrollView>
@@ -167,6 +175,15 @@ const styles = StyleSheet.create({
   linkText: {
     color: COLORS.primary,
     fontWeight: '600',
+  },
+  guestBtn: {
+    marginTop: SPACING.lg,
+    paddingVertical: SPACING.sm,
+  },
+  guestText: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   demoHint: {
     fontSize: FONT_SIZE.sm,
