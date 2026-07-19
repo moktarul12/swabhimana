@@ -1,4 +1,4 @@
-import { createClient } from '@libsql/client';
+import { createClient } from '@libsql/client/web';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
