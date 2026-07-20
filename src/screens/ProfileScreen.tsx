@@ -41,7 +41,14 @@ export default function ProfileScreen({ navigation }: any) {
     if (item.action === 'logout') {
       Alert.alert('Logout', 'Are you sure you want to logout?', [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Logout', style: 'destructive', onPress: () => logout() },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+            navigation.getParent()?.reset({ index: 0, routes: [{ name: 'Welcome' }] });
+          },
+        },
       ]);
     } else if (item.tab && item.screen) {
       navigation.navigate(item.screen);
