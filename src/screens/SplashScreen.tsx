@@ -13,9 +13,11 @@ export default function SplashScreen({ navigation }: any) {
 
   useEffect(() => {
     if (isLoading) return;
-    const delay = Platform.OS === 'web' ? 800 : 2500;
+    const delay = Platform.OS === 'web' ? 400 : 2500;
     const timer = setTimeout(() => {
-      if (user || isGuest) navigation.replace('Main');
+      // Web landing is always Welcome; native app can open Main when signed in / guest
+      if (Platform.OS === 'web') navigation.replace('Welcome');
+      else if (user || isGuest) navigation.replace('Main');
       else navigation.replace('Welcome');
     }, delay);
     return () => clearTimeout(timer);

@@ -1,5 +1,6 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { Platform } from 'react-native';
+import { NavigationContainer, getStateFromPath as defaultGetStateFromPath } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -41,26 +42,70 @@ const linking = {
   prefixes: [
     'manavsathi://',
     'http://localhost:8081',
-    'https://manavsathis.com',
     'https://manavsathi.com',
     'https://www.manavsathi.com',
+    'https://manavsathis.com',
     'https://manavsathi-render.onrender.com',
   ],
   config: {
     screens: {
-      Main: 'app',
-      Welcome: 'welcome',
+      Welcome: '',
+      Splash: 'splash',
       Login: 'login',
       SignUp: 'signup',
+      Main: {
+        path: 'app',
+        screens: {
+          HomeTab: 'home',
+          DonateTab: 'donate',
+          HistoryTab: 'history',
+          ImpactTab: 'impact',
+          ProfileTab: 'profile',
+        },
+      },
       AdminLogin: 'admin',
       AdminDashboard: 'admin/dashboard',
       VolunteerLogin: 'volunteer',
       VolunteerDashboard: 'volunteer/dashboard',
       AboutUs: 'about',
       Stories: 'stories',
+      TrackDonation: 'track',
+      HelpSupport: 'help',
+      More: 'more',
     },
   },
+  getStateFromPath(path: string, options: any) {
+    const clean = path.replace(/^\//, '').replace(/\/$/, '');
+    // `/` and `/welcome` → Welcome concept page
+    if (clean === '' || clean === 'welcome') {
+      return { routes: [{ name: 'Welcome' }] };
+    }
+    return defaultGetStateFromPath(path, options);
+  },
 };
+
+function getWebPath(): string {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return '';
+  return window.location.pathname || '/';
+}
+
+function resolveInitialRoute(user: unknown, isGuest: boolean): string {
+  if (Platform.OS === 'web') {
+    const path = getWebPath();
+    if (path.startsWith('/app')) return user || isGuest ? 'Main' : 'Welcome';
+    if (path.startsWith('/admin/dashboard')) return 'AdminDashboard';
+    if (path.startsWith('/admin')) return 'AdminLogin';
+    if (path.startsWith('/volunteer/dashboard')) return 'VolunteerDashboard';
+    if (path.startsWith('/volunteer')) return 'VolunteerLogin';
+    if (path.startsWith('/login')) return 'Login';
+    if (path.startsWith('/signup')) return 'SignUp';
+    if (path.startsWith('/about')) return 'AboutUs';
+    if (path.startsWith('/stories')) return 'Stories';
+    // `/`, `/welcome`, and other marketing paths → Welcome concept page
+    return 'Welcome';
+  }
+  return user || isGuest ? 'Main' : 'Splash';
+}
 
 function MainTabs() {
   return (
@@ -94,7 +139,7 @@ function MainTabs() {
 export default function AppNavigator() {
   const { user, isGuest, isLoading } = useAuth();
   if (isLoading) return null;
-  const initialRoute = user || isGuest ? 'Main' : 'Splash';
+  const initialRoute = resolveInitialRoute(user, isGuest);
 
   return (
     <DonateProvider>

@@ -1,7 +1,7 @@
 export const APP_NAME = 'ManavSathi';
 export const APP_TAGLINE = 'Together, we change lives';
-export const APP_DOMAIN = 'ManavSathis.com';
-export const APP_URL = 'https://manavsathis.com';
+export const APP_DOMAIN = 'ManavSathi.com';
+export const APP_URL = 'https://manavsathi.com';
 export const APP_SCHEME = 'manavsathi';
 
 export const DEMO_USER = {
